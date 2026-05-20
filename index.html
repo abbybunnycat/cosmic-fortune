@@ -96,6 +96,17 @@
     <!-- 星空背景 -->
     <div class="stars"></div>
 
+    <!-- 右上角設定按鈕 (星際密鑰) -->
+    <div class="absolute top-4 right-4 z-20">
+        <button onclick="openSettingsModal()" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900/80 border border-slate-700 hover:border-cyan-500 rounded-full transition-all text-xs text-slate-400 hover:text-cyan-400 shadow-lg backdrop-blur-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 animate-spin-slow">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <span>星際密鑰設定</span>
+        </button>
+    </div>
+
     <!-- 頂部標題區 -->
     <header class="relative z-10 text-center pt-8 px-4">
         <h1 class="text-4xl md:text-5xl font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 mb-2 drop-shadow-lg">
@@ -332,10 +343,52 @@
         </div>
     </div>
 
+    <!-- 星際密鑰設定 Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-500">
+        <div class="relative w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl flex flex-col gap-4">
+            <button onclick="closeSettingsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="text-center">
+                <h3 class="text-xl font-bold text-cyan-400 flex items-center justify-center gap-2">
+                    🔑 星際密鑰安全設定
+                </h3>
+                <p class="text-[11px] text-slate-400 mt-1">
+                    金鑰僅保存在本機瀏覽器中，安全防洩漏
+                </p>
+            </div>
+            
+            <div class="flex flex-col gap-1.5">
+                <label class="text-xs text-slate-300 font-medium">Gemini API 金鑰：</label>
+                <div class="relative">
+                    <input id="api-key-input" type="password" placeholder="AI Studio 的 API 金鑰 (AIzaSy...)" class="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500/60 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none" />
+                </div>
+                <div class="text-[10px] text-slate-500 leading-relaxed mt-1">
+                    💡 <strong>尚未擁有金鑰嗎？</strong><br>
+                    Gemini API 提供免費方案！您可以直接點選 
+                    <a href="https://aistudio.google.com/" target="_blank" class="text-cyan-400 hover:underline">Google AI Studio</a> 
+                    登入您的 Google 帳號免費建立一組密鑰。
+                </div>
+            </div>
+
+            <div class="flex gap-2 mt-2">
+                <button onclick="saveApiKey()" class="flex-grow py-2.5 bg-cyan-600 hover:bg-cyan-500 rounded-xl font-bold text-xs text-white transition-all">
+                    儲存金鑰 💾
+                </button>
+                <button onclick="clearApiKey()" class="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 rounded-xl font-medium text-xs text-slate-300 transition-all">
+                    清除
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 運勢資料庫與遊戲邏輯 -->
     <script>
-        // 初始化 Gemini API 金鑰 (由運行環境在執行時提供)
-        const apiKey = "";
+        // 初始化環境金鑰變數 (Canvas 預覽時自動注入此變數，在 GitHub Pages 等外部主機會是空值)
+        const envApiKey = "";
 
         // 5張卡片的宇宙符號設定（用在結果頁保持卡片主題一致）
         const CARD_THEMES = [
@@ -581,6 +634,53 @@
             modal.classList.add('opacity-0', 'pointer-events-none');
         }
 
+        // 🔐 本地密鑰相關管理函數
+        function openSettingsModal() {
+            const modal = document.getElementById('settings-modal');
+            const savedKey = localStorage.getItem('cosmic_gemini_api_key') || "";
+            document.getElementById('api-key-input').value = savedKey;
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closeSettingsModal() {
+            const modal = document.getElementById('settings-modal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function saveApiKey() {
+            const inputVal = document.getElementById('api-key-input').value.trim();
+            if (inputVal) {
+                localStorage.setItem('cosmic_gemini_api_key', inputVal);
+                showCustomToast("星際密鑰儲存成功！🪐");
+            } else {
+                localStorage.removeItem('cosmic_gemini_api_key');
+                showCustomToast("已移除星際密鑰。");
+            }
+            closeSettingsModal();
+        }
+
+        function clearApiKey() {
+            document.getElementById('api-key-input').value = "";
+            localStorage.removeItem('cosmic_gemini_api_key');
+            showCustomToast("星際密鑰已清除！🧹");
+            closeSettingsModal();
+        }
+
+        // 自訂簡易 Toast 提示訊息
+        function showCustomToast(message) {
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 bg-slate-900 border border-cyan-500/50 text-cyan-400 font-bold px-6 py-3 rounded-full shadow-lg text-sm transition-opacity duration-300 pointer-events-none opacity-0";
+            toast.innerText = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => { toast.classList.remove('opacity-0'); toast.classList.add('opacity-100'); }, 50);
+            setTimeout(() => { 
+                toast.classList.remove('opacity-100'); 
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
         // 指數退避 API 呼叫函數
         async function fetchWithRetry(url, options, retries = 5, delay = 1000) {
             try {
@@ -606,12 +706,37 @@
             const responseContainer = document.getElementById('ai-response-container');
             const submitBtn = document.getElementById('ai-submit-btn');
 
+            // 1. 取得金鑰：優先讀取本機 localStorage，次之為系統 env 變數
+            const userStoredKey = localStorage.getItem('cosmic_gemini_api_key') || "";
+            const activeApiKey = userStoredKey || envApiKey;
+
             // 顯示載入狀態
             responseContainer.classList.remove('hidden');
             loading.classList.remove('hidden');
             output.innerText = "";
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-50', 'pointer-events-none');
+
+            // 2. 如果沒有設定任何 API Key，提供明確導引提示
+            if (!activeApiKey) {
+                setTimeout(() => {
+                    loading.classList.add('hidden');
+                    output.innerHTML = `
+                        <div class="p-4 bg-slate-950/80 rounded-2xl border border-amber-500/30 text-amber-300 text-xs md:text-sm leading-relaxed">
+                            <p class="font-bold mb-1.5 flex items-center gap-1">⚠️ 偵測到星際密鑰尚未設定</p>
+                            <p class="mb-2 text-slate-400">目前網頁運行在獨立環境中，需要設定個人的金鑰才能召喚 AI 星靈唷！</p>
+                            <ol class="list-decimal pl-4 text-slate-400 space-y-1">
+                                <li>點選網頁右上角的 <span class="text-cyan-400 font-bold">「星際密鑰設定」</span> 按鈕。</li>
+                                <li>貼上您的免費 Gemini API 金鑰（可點選視窗內的官方連結免費獲取）。</li>
+                                <li>點擊「儲存金鑰」，即可重試解鎖極致深度解析！</li>
+                            </ol>
+                        </div>
+                    `;
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-50', 'pointer-events-none');
+                }, 800);
+                return;
+            }
 
             // 構建提示詞 (Prompt) 與 系統提示詞 (System Instruction)
             const userQuestion = questionInput || "我今天的整體發展與身心能量平衡";
@@ -626,7 +751,7 @@
                 請為我進行深度的星盤解碼與宇宙私語指引！
             `;
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${activeApiKey}`;
             const payload = {
                 contents: [{ parts: [{ text: userPrompt }] }],
                 systemInstruction: { parts: [{ text: systemPrompt }] }
@@ -649,7 +774,7 @@
                 }
             } catch (error) {
                 loading.classList.add('hidden');
-                output.innerHTML = `<span class="text-red-400">⚠️ 星靈通道暫時受到星際風暴干擾（無法連接到 API）。請稍後再次嘗試召喚，或者重新抽牌聚集能量！</span>`;
+                output.innerHTML = `<span class="text-rose-400">⚠️ 星靈通道暫時受到星際風暴干擾（無法連接到 API）。請確認您的金鑰是否正確無誤、或是重啟星盤再試一次！</span>`;
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-50', 'pointer-events-none');
@@ -700,7 +825,7 @@
                 inner.classList.remove('card-flipped');
             }
 
-            // 重新洗牌並生成新的運勢（確保每次點選都是隨機吉凶）
+            // 重新洗牌並生成新的運勢
             prepareFortunes();
 
             // 延遲還原卡片佈局與顯示，確保翻牌先復原
