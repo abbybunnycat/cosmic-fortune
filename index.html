@@ -96,19 +96,45 @@
     <!-- 星空背景 -->
     <div class="stars"></div>
 
+    <!-- 頂部動態導引提示條 (只在未設定 API Key 時醒目呈現) -->
+    <div id="api-guide-banner" class="hidden relative z-30 bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-indigo-500/20 border-b border-amber-500/30 backdrop-blur-md px-4 py-3 text-center transition-all duration-500">
+        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+            <span class="text-xs md:text-sm text-amber-200 font-medium flex items-center gap-1.5">
+                <span class="flex h-2 w-2 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                </span>
+                🌌 啟動「AI 星靈專屬解盤」需要配置您的專屬密鑰唷！
+            </span>
+            <div class="flex items-center gap-3">
+                <button onclick="openSettingsModal()" class="px-3.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-full text-xs font-bold tracking-wider transition-all shadow-md active:scale-95">
+                    立即設定 🔑
+                </button>
+                <button onclick="dismissBanner()" class="text-slate-400 hover:text-slate-200 text-xs transition-colors">
+                    暫時忽略
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 右上角設定按鈕 (星際密鑰) -->
     <div class="absolute top-4 right-4 z-20">
-        <button onclick="openSettingsModal()" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900/80 border border-slate-700 hover:border-cyan-500 rounded-full transition-all text-xs text-slate-400 hover:text-cyan-400 shadow-lg backdrop-blur-sm">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 animate-spin-slow">
+        <button id="settings-trigger-btn" onclick="openSettingsModal()" class="flex items-center gap-2 px-4 py-2 bg-slate-900/90 border border-slate-700 hover:border-cyan-400 rounded-full transition-all text-xs text-slate-300 hover:text-white shadow-xl backdrop-blur-md">
+            <!-- 動態狀態圓點 -->
+            <span class="flex h-2 w-2 relative">
+                <span id="btn-status-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span id="btn-status-dot" class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+            </span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
                 <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
                 <circle cx="12" cy="12" r="3"/>
             </svg>
-            <span>星際密鑰設定</span>
+            <span id="btn-status-text">星際密鑰: 未設定 ⚠️</span>
         </button>
     </div>
 
     <!-- 頂部標題區 -->
-    <header class="relative z-10 text-center pt-8 px-4">
+    <header class="relative z-10 text-center pt-10 px-4">
         <h1 class="text-4xl md:text-5xl font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 mb-2 drop-shadow-lg">
             今日宇宙運勢占卜
         </h1>
@@ -263,11 +289,17 @@
     </main>
 
     <!-- 底部功能區 (預設隱藏，翻牌後顯示) -->
-    <footer class="relative z-10 text-center pb-8 pt-4 px-4 flex flex-col items-center justify-center gap-4">
+    <footer class="relative z-10 text-center pb-8 pt-4 px-4 flex flex-col items-center justify-center gap-3">
         <!-- AI 解析調用按鈕 -->
-        <button id="ai-trigger-btn" onclick="openAiModal()" class="hidden opacity-0 transform translate-y-4 transition-all duration-700 ease-out px-8 py-3 bg-gradient-to-r from-teal-500 via-cyan-500 to-indigo-500 rounded-full font-bold text-sm tracking-widest shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:scale-105 active:scale-95 duration-150 text-white">
-            ✨ 尋求 AI 星靈專屬解盤 ✨
-        </button>
+        <div class="flex flex-col items-center gap-1.5">
+            <button id="ai-trigger-btn" onclick="openAiModal()" class="hidden opacity-0 transform translate-y-4 transition-all duration-700 ease-out px-8 py-3 bg-gradient-to-r from-teal-500 via-cyan-500 to-indigo-500 rounded-full font-bold text-sm tracking-widest shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/45 hover:scale-105 active:scale-95 duration-150 text-white relative">
+                ✨ 尋求 AI 星靈專屬解盤 ✨
+            </button>
+            <!-- 智慧提示小標籤 (僅在未設定 Key 時輔助顯示於按鈕下方) -->
+            <p id="ai-btn-hint" class="hidden text-[10px] text-amber-400/80 animate-pulse transition-all">
+                ⚠️ 本機尚未配置星際密鑰，解盤時需手動配置。
+            </p>
+        </div>
         <!-- 重啟星際占卜按鈕 -->
         <button id="reset-btn" onclick="resetGame()" class="opacity-0 pointer-events-none transform translate-y-4 transition-all duration-700 ease-out px-8 py-2.5 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded-full font-semibold text-xs tracking-wider shadow-lg hover:scale-105 active:scale-95 duration-150 text-slate-300">
             重啟星際占卜 🌀
@@ -369,16 +401,16 @@
                 <div class="text-[10px] text-slate-500 leading-relaxed mt-1">
                     💡 <strong>尚未擁有金鑰嗎？</strong><br>
                     Gemini API 提供免費方案！您可以直接點選 
-                    <a href="https://aistudio.google.com/" target="_blank" class="text-cyan-400 hover:underline">Google AI Studio</a> 
+                    <a href="https://aistudio.google.com/" target="_blank" class="text-cyan-400 hover:underline font-bold">Google AI Studio</a> 
                     登入您的 Google 帳號免費建立一組密鑰。
                 </div>
             </div>
 
             <div class="flex gap-2 mt-2">
-                <button onclick="saveApiKey()" class="flex-grow py-2.5 bg-cyan-600 hover:bg-cyan-500 rounded-xl font-bold text-xs text-white transition-all">
+                <button onclick="saveApiKey()" class="flex-grow py-2.5 bg-cyan-600 hover:bg-cyan-500 rounded-xl font-bold text-xs text-white transition-all shadow-md shadow-cyan-600/20 active:scale-95">
                     儲存金鑰 💾
                 </button>
-                <button onclick="clearApiKey()" class="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 rounded-xl font-medium text-xs text-slate-300 transition-all">
+                <button onclick="clearApiKey()" class="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 rounded-xl font-medium text-xs text-slate-300 transition-all active:scale-95">
                     清除
                 </button>
             </div>
@@ -558,6 +590,53 @@
             }
         }
 
+        // 檢查金鑰狀態並動態更新介面
+        function updateApiKeyStatusUi() {
+            const userStoredKey = localStorage.getItem('cosmic_gemini_api_key') || "";
+            const activeApiKey = userStoredKey || envApiKey;
+
+            const banner = document.getElementById('api-guide-banner');
+            const btnDot = document.getElementById('btn-status-dot');
+            const btnPing = document.getElementById('btn-status-ping');
+            const btnText = document.getElementById('btn-status-text');
+            const btnTrigger = document.getElementById('settings-trigger-btn');
+            const aiHint = document.getElementById('ai-btn-hint');
+
+            if (activeApiKey) {
+                // 已設定密鑰的樣式 (綠色星辰)
+                banner.classList.add('hidden');
+                
+                btnDot.className = "relative inline-flex rounded-full h-2 w-2 bg-emerald-500";
+                btnPing.className = "absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-0"; // 取消閃爍
+                btnText.innerText = "星際密鑰: 已啟動 ✨";
+                btnTrigger.classList.remove('border-slate-700', 'hover:border-cyan-400', 'animate-pulse');
+                btnTrigger.classList.add('border-emerald-500/50', 'text-emerald-300', 'hover:border-emerald-400');
+                
+                if (aiHint) aiHint.classList.add('hidden');
+            } else {
+                // 未設定密鑰的樣式 (黃色警示，強烈呼吸閃爍)
+                const isDismissed = sessionStorage.getItem('api_banner_dismissed');
+                if (!isDismissed) {
+                    banner.classList.remove('hidden');
+                }
+                
+                btnDot.className = "relative inline-flex rounded-full h-2 w-2 bg-amber-500";
+                btnPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75";
+                btnText.innerText = "星際密鑰: 未設定 ⚠️";
+                btnTrigger.classList.remove('border-emerald-500/50', 'text-emerald-300', 'hover:border-emerald-400');
+                btnTrigger.classList.add('border-amber-500/50', 'text-amber-300', 'hover:border-amber-400', 'animate-pulse');
+                
+                // 占卜後才顯示的 AI 按鈕提示
+                if (hasSelected && aiHint) aiHint.classList.remove('hidden');
+            }
+        }
+
+        // 關閉橫幅提示條
+        function dismissBanner() {
+            document.getElementById('api-guide-banner').classList.add('hidden');
+            sessionStorage.setItem('api_banner_dismissed', 'true');
+        }
+
         // 選擇牌面
         function selectCard(selectedIndex) {
             if (hasSelected) return; // 避免重複點選
@@ -609,6 +688,13 @@
                     const aiTriggerBtn = document.getElementById('ai-trigger-btn');
                     aiTriggerBtn.classList.remove('hidden', 'opacity-0', 'translate-y-4');
                     aiTriggerBtn.classList.add('block', 'opacity-100', 'translate-y-0');
+
+                    // 根據目前 Key 狀態動態決定是否顯示 AI 提示
+                    const userStoredKey = localStorage.getItem('cosmic_gemini_api_key') || "";
+                    const activeApiKey = userStoredKey || envApiKey;
+                    if (!activeApiKey) {
+                        document.getElementById('ai-btn-hint').classList.remove('hidden');
+                    }
                 }, 400);
 
             }, 550);
@@ -651,11 +737,12 @@
             const inputVal = document.getElementById('api-key-input').value.trim();
             if (inputVal) {
                 localStorage.setItem('cosmic_gemini_api_key', inputVal);
-                showCustomToast("星際密鑰儲存成功！🪐");
+                showCustomToast("星際密鑰儲存成功！🪐 已解鎖 AI 功能。");
             } else {
                 localStorage.removeItem('cosmic_gemini_api_key');
                 showCustomToast("已移除星際密鑰。");
             }
+            updateApiKeyStatusUi();
             closeSettingsModal();
         }
 
@@ -663,6 +750,7 @@
             document.getElementById('api-key-input').value = "";
             localStorage.removeItem('cosmic_gemini_api_key');
             showCustomToast("星際密鑰已清除！🧹");
+            updateApiKeyStatusUi();
             closeSettingsModal();
         }
 
@@ -681,7 +769,7 @@
             }, 2500);
         }
 
-        // 指數退避 API 呼叫函數
+        // 指數退避 API 呼景函數
         async function fetchWithRetry(url, options, retries = 5, delay = 1000) {
             try {
                 const response = await fetch(url, options);
@@ -706,7 +794,7 @@
             const responseContainer = document.getElementById('ai-response-container');
             const submitBtn = document.getElementById('ai-submit-btn');
 
-            // 1. 取得金鑰：優先讀取本機 localStorage，次之為系統 env 變數
+            // 1. 取得金鑰
             const userStoredKey = localStorage.getItem('cosmic_gemini_api_key') || "";
             const activeApiKey = userStoredKey || envApiKey;
 
@@ -717,17 +805,17 @@
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-50', 'pointer-events-none');
 
-            // 2. 如果沒有設定任何 API Key，提供明確導引提示
+            // 2. 如果沒有設定任何 API Key，提供清晰流動的步驟導引
             if (!activeApiKey) {
                 setTimeout(() => {
                     loading.classList.add('hidden');
                     output.innerHTML = `
                         <div class="p-4 bg-slate-950/80 rounded-2xl border border-amber-500/30 text-amber-300 text-xs md:text-sm leading-relaxed">
-                            <p class="font-bold mb-1.5 flex items-center gap-1">⚠️ 偵測到星際密鑰尚未設定</p>
-                            <p class="mb-2 text-slate-400">目前網頁運行在獨立環境中，需要設定個人的金鑰才能召喚 AI 星靈唷！</p>
-                            <ol class="list-decimal pl-4 text-slate-400 space-y-1">
-                                <li>點選網頁右上角的 <span class="text-cyan-400 font-bold">「星際密鑰設定」</span> 按鈕。</li>
-                                <li>貼上您的免費 Gemini API 金鑰（可點選視窗內的官方連結免費獲取）。</li>
+                            <p class="font-bold mb-1.5 flex items-center gap-1 text-sm">⚠️ 星際通道密鑰尚未配置</p>
+                            <p class="mb-2 text-slate-400">由於此程式在您獨立的伺服器運作，需要您配置個人的 Gemini 金鑰以完成召喚：</p>
+                            <ol class="list-decimal pl-4 text-slate-400 space-y-1.5 text-xs">
+                                <li>點選網頁右上角閃爍的 <span class="text-amber-400 font-bold">「星際密鑰設定」</span> 按鈕。</li>
+                                <li>貼上您的 Gemini API 金鑰（視窗內附有 <span class="text-cyan-400">Google 官方免費申請</span> 快速連結）。</li>
                                 <li>點擊「儲存金鑰」，即可重試解鎖極致深度解析！</li>
                             </ol>
                         </div>
@@ -805,7 +893,7 @@
             hasSelected = false;
             currentSelection = { cardIndex: null, fortune: null, theme: null };
 
-            // 隱藏重來按鈕與 AI 按鈕
+            // 隱藏重來按鈕與 AI 按鈕與提示
             const resetBtn = document.getElementById('reset-btn');
             resetBtn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
             resetBtn.classList.remove('opacity-100', 'translate-y-0');
@@ -814,6 +902,9 @@
             aiTriggerBtn.classList.add('opacity-0', 'translate-y-4');
             aiTriggerBtn.classList.remove('block', 'opacity-100', 'translate-y-0');
             setTimeout(() => { aiTriggerBtn.classList.add('hidden'); }, 400);
+
+            const aiHint = document.getElementById('ai-btn-hint');
+            if (aiHint) aiHint.classList.add('hidden');
 
             // 還原副標題
             const subTitle = document.getElementById('sub-title');
@@ -855,6 +946,7 @@
         // 初始化載入
         window.onload = function() {
             prepareFortunes();
+            updateApiKeyStatusUi(); // 載入時立即檢查並設置 UI 狀態
         };
     </script>
 </body>
