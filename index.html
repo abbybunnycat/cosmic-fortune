@@ -219,8 +219,7 @@
                         <div class="flex-grow flex flex-col justify-center items-center gap-4">
                             <!-- 宇宙圖樣：耀眼恆星/超新星 -->
                             <div class="w-20 h-20 text-pink-400 nebula-glow">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
-                                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /><circle cx="12" cy="12" r="4" /></svg>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></svg>
                             </div>
                             <span class="text-xs tracking-wider text-pink-300 font-medium">日冕超新星</span>
                         </div>
@@ -245,8 +244,7 @@
                         <div class="flex-grow flex flex-col justify-center items-center gap-4">
                             <!-- 宇宙圖樣：旋渦/黑洞 -->
                             <div class="w-20 h-20 text-emerald-400 nebula-glow">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
-                                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /><path d="M12 12c0 2.5-1.5 4.5-3.5 4.5S5 14.5 5 12" /><path d="M12 12c0-2.5 1.5-4.5 3.5-4.5s3.5 2 3.5 4.5" /></svg>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /><path d="M12 12c0 2.5-1.5 4.5-3.5 4.5S5 14.5 5 12" /><path d="M12 12c0-2.5 1.5-4.5 3.5-4.5s3.5 2 3.5 4.5" /></svg>
                             </div>
                             <span class="text-xs tracking-wider text-emerald-300 font-medium">奇異黑洞</span>
                         </div>
@@ -271,8 +269,7 @@
                         <div class="flex-grow flex flex-col justify-center items-center gap-4">
                             <!-- 宇宙圖樣：閃耀星芒 -->
                             <div class="w-20 h-20 text-amber-400 nebula-glow">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
-                                    <path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9Z" /><circle cx="12" cy="12" r="2" /></svg>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9Z" /><circle cx="12" cy="12" r="2" /></svg>
                             </div>
                             <span class="text-xs tracking-wider text-amber-300 font-medium">黃金熾星</span>
                         </div>
@@ -367,9 +364,9 @@
                     <span class="text-xs text-slate-400 animate-pulse">正在調度星際網路，凝聚星塵能量...</span>
                 </div>
                 <!-- 解析文字呈現 -->
-                <p id="ai-output" class="text-xs md:text-sm text-slate-300 leading-relaxed text-left whitespace-pre-line max-h-[220px] overflow-y-auto pr-1">
+                <div id="ai-output" class="text-xs md:text-sm text-slate-300 leading-relaxed text-left whitespace-pre-line max-h-[220px] overflow-y-auto pr-1">
                     <!-- AI 輸出內容 -->
-                </p>
+                </div>
             </div>
 
         </div>
@@ -614,7 +611,7 @@
                 
                 if (aiHint) aiHint.classList.add('hidden');
             } else {
-                // 未設定密鑰的樣式 (黃色警示，強烈呼吸閃爍)
+                // 未設定密鑰的樣式 (黃色警示，強烈呼吸燈閃爍)
                 const isDismissed = sessionStorage.getItem('api_banner_dismissed');
                 if (!isDismissed) {
                     banner.classList.remove('hidden');
@@ -769,21 +766,68 @@
             }, 2500);
         }
 
-        // 指數退避 API 呼景函數
-        async function fetchWithRetry(url, options, retries = 5, delay = 1000) {
-            try {
-                const response = await fetch(url, options);
-                if (!response.ok) {
-                    throw new Error(`HTTP 錯誤！狀態碼：${response.status}`);
+        // 調用並自動遞迴嘗試不同型號 (Model Fallback) 且包含 5 次指數退避
+        async function fetchGeminiWithFallbackAndRetry(activeApiKey, payload, retries = 5, delay = 1000) {
+            // 依序嘗試的模型名單：
+            // 1. gemini-2.5-flash (標準正式版模型，在個人 API Key 下最容易成功)
+            // 2. gemini-2.5-flash-preview-09-2025 (開發平台專用預覽版)
+            // 3. gemini-1.5-flash (極速版穩定後備模型)
+            const models = ['gemini-2.5-flash', 'gemini-2.5-flash-preview-09-2025', 'gemini-1.5-flash'];
+            let lastError = null;
+
+            for (const model of models) {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${activeApiKey}`;
+                
+                try {
+                    let attempt = 0;
+                    let response;
+                    
+                    // 執行指數退避重試
+                    while (attempt <= retries) {
+                        try {
+                            response = await fetch(url, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+                            break; // 成功獲取 HTTP 回應，跳出重試
+                        } catch (err) {
+                            if (attempt === retries) throw err;
+                            attempt++;
+                            await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, attempt)));
+                        }
+                    }
+
+                    if (response && response.ok) {
+                        return await response.json(); // 完全成功，直接回傳！
+                    } else if (response) {
+                        // 解析詳細的錯誤碼與錯誤訊息
+                        let errorDetail = "";
+                        try {
+                            const errJson = await response.json();
+                            errorDetail = errJson.error?.message || response.statusText;
+                        } catch (e) {
+                            errorDetail = response.statusText;
+                        }
+                        
+                        // 如果是 400 (金鑰打錯) 或 403 (地理限制/權限不夠)，不需嘗試其他模型，直接回報真實錯誤
+                        if (response.status === 400 || response.status === 403) {
+                            throw new Error(`[API 錯誤碼 ${response.status}] ${errorDetail}`);
+                        }
+                        
+                        // 否則記錄錯誤，換下一個模型試試
+                        lastError = new Error(`[模型 ${model} 失敗, 錯誤碼 ${response.status}] ${errorDetail}`);
+                    }
+                } catch (error) {
+                    lastError = error;
+                    // 如果錯誤訊息內含明確定製好的 API 錯誤提示，直接往外拋出，不再跑循環
+                    if (error.message.includes('[API 錯誤碼')) {
+                        throw error;
+                    }
                 }
-                return await response.json();
-            } catch (error) {
-                if (retries > 0) {
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    return fetchWithRetry(url, options, retries - 1, delay * 2);
-                }
-                throw error;
             }
+
+            throw lastError || new Error("無法連接至 Google 宇宙星際網路。");
         }
 
         // 調用 Gemini API 進行 AI 星靈深度解析
@@ -839,18 +883,14 @@
                 請為我進行深度的星盤解碼與宇宙私語指引！
             `;
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${activeApiKey}`;
             const payload = {
                 contents: [{ parts: [{ text: userPrompt }] }],
                 systemInstruction: { parts: [{ text: systemPrompt }] }
             };
 
             try {
-                const result = await fetchWithRetry(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                // 執行智慧遞迴、多模型嘗試、以及重試邏輯
+                const result = await fetchGeminiWithFallbackAndRetry(activeApiKey, payload);
 
                 const replyText = result.candidates?.[0]?.content?.parts?.[0]?.text;
                 
@@ -858,11 +898,28 @@
                     loading.classList.add('hidden');
                     typeWriterEffect(output, replyText);
                 } else {
-                    throw new Error("無法解析星靈反饋之能量。");
+                    throw new Error("無法解析星靈反饋之能量（空內容）。");
                 }
             } catch (error) {
                 loading.classList.add('hidden');
-                output.innerHTML = `<span class="text-rose-400">⚠️ 星靈通道暫時受到星際風暴干擾（無法連接到 API）。請確認您的金鑰是否正確無誤、或是重啟星盤再試一次！</span>`;
+                
+                // 動態分析錯誤並友善呈現給使用者：
+                let displayErrorMsg = error.message;
+                let helperText = "請確認您的金鑰是否正確無誤（例如有無複製到空白字元），或重啟星盤再試一次。";
+                
+                if (displayErrorMsg.includes("400")) {
+                    helperText = "💡 **這通常代表 API 金鑰不正確**：請檢查是否複製到了不必要的空白，或是多複製了其他文字。請重新在「星際密鑰設定」中填入正確金鑰。";
+                } else if (displayErrorMsg.includes("403")) {
+                    helperText = "💡 **這通常代表權限不足或地區限制**：您的 Google 帳號可能被限制存取此 API（某些國家或公司帳號預設未開放）。您可以嘗試更換其他的 Google 帳號來免費申請一組新的金鑰。";
+                }
+
+                output.innerHTML = `
+                    <div class="p-4 bg-red-950/40 rounded-2xl border border-red-500/30 text-rose-300 text-xs md:text-sm leading-relaxed">
+                        <p class="font-bold mb-1 flex items-center gap-1">⚠️ 解讀失敗（星靈通道受阻）</p>
+                        <p class="mb-2 text-rose-200/80 font-mono text-[11px] bg-black/30 p-2 rounded border border-red-950">${displayErrorMsg}</p>
+                        <p class="text-slate-400 text-xs">${helperText}</p>
+                    </div>
+                `;
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-50', 'pointer-events-none');
