@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今日宇宙運勢占卜 - 命運的星圖</title>
+    <!-- 引入 Tailwind CSS 與 Google 字型 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght=300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            overflow-x: hidden;
+        }
+
+        /* 閃爍星空背景 */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            background-position: 0 0, 40px 60px, 130px 270px;
+            animation: starFlicker 60s linear infinite;
+        }
+
+        @keyframes starFlicker {
+            from { background-position: 0 0, 40px 60px, 130px 270px; }
+            to { background-position: 550px 1100px, 1400px 350px, 1250px -1080px; }
+        }
+
+        /* 3D 翻牌效果 */
+        .card-container {
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+
+        .card-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+        }
+
+        /* 牌面浮動動畫 */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .floating-delay-1 { animation: float 6s ease-in-out infinite 1.2s; }
+        .floating-delay-2 { animation: float 6s ease-in-out infinite 2.4s; }
+        .floating-delay-3 { animation: float 6s ease-in-out infinite 3.6s; }
+        .floating-delay-4 { animation: float 6s ease-in-out infinite 4.8s; }
+
+        /* 星雲光暈 */
+        .nebula-glow {
+            filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.4));
+        }
+
+        /* 打字機效果游標 */
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 1s step-start infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between relative">
+    
+    <!-- 星空背景 -->
+    <div class="stars"></div>
+
+    <!-- 頂部標題區 -->
+    <header class="relative z-10 text-center pt-8 px-4">
+        <h1 class="text-4xl md:text-5xl font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 mb-2 drop-shadow-lg">
+            今日宇宙運勢占卜
+        </h1>
+        <p id="sub-title" class="text-sm md:text-base text-slate-400 tracking-wide max-w-md mx-auto">
+            閉上雙眼，深呼吸三次... 傾聽星塵的耳語，<br>從五張神祕的宇宙圖卡中，選取一張屬於你的今日啟示。
+        </p>
+    </header>
+
+    <!-- 主遊戲區 -->
+    <main class="relative z-10 flex-grow flex items-center justify-center py-6 px-4">
+        <!-- 牌組容器 -->
+        <div id="cards-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-6 max-w-6xl w-full justify-center items-center transition-all duration-700">
+            
+            <!-- 牌卡 1：幻彩星系 -->
+            <div onclick="selectCard(0)" id="card-wrapper-0" class="card-container floating cursor-pointer w-full max-w-[180px] mx-auto h-[280px] transition-all duration-700 hover:scale-105">
+                <div id="card-inner-0" class="card-inner w-full h-full relative">
+                    <!-- 牌背 -->
+                    <div class="card-front w-full h-full absolute rounded-2xl border-2 border-indigo-500/50 bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 p-4 flex flex-col justify-between shadow-2xl shadow-indigo-500/20">
+                        <div class="flex justify-between items-center text-xs text-indigo-400 font-mono">
+                            <span>COSMOS</span>
+                            <span>Ⅰ</span>
+                        </div>
+                        <div class="flex-grow flex flex-col justify-center items-center gap-4">
+                            <!-- 宇宙圖樣：星系 -->
+                            <div class="w-20 h-20 text-indigo-400 nebula-glow">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
+                                    <path d="M12 3a9 9 0 0 0-9 9M12 21a9 9 0 0 0 9-9" />
+                                    <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+                                    <path d="M12 12c2-3 5-4 7-2s1 5-2 7" />
+                                    <path d="M12 12c-2 3-5 4-7 2s-1-5 2-7" />
+                                </svg>
+                            </div>
+                            <span class="text-xs tracking-wider text-indigo-300 font-medium">幻彩星系</span>
+                        </div>
+                        <div class="text-center text-[10px] text-slate-500 font-mono">CARD BACK</div>
+                    </div>
+                    <!-- 牌面 (結果) -->
+                    <div id="card-result-0" class="card-back w-full h-full absolute rounded-2xl p-[2px]">
+                        <!-- 動態填充內容 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 牌卡 2：深空星雲 -->
+            <div onclick="selectCard(1)" id="card-wrapper-1" class="card-container floating-delay-1 cursor-pointer w-full max-w-[180px] mx-auto h-[280px] transition-all duration-700 hover:scale-105">
+                <div id="card-inner-1" class="card-inner w-full h-full relative">
+                    <!-- 牌背 -->
+                    <div class="card-front w-full h-full absolute rounded-2xl border-2 border-purple-500/50 bg-gradient-to-b from-purple-950 via-slate-900 to-slate-950 p-4 flex flex-col justify-between shadow-2xl shadow-purple-500/20">
+                        <div class="flex justify-between items-center text-xs text-purple-400 font-mono">
+                            <span>COSMOS</span>
+                            <span>Ⅱ</span>
+                        </div>
+                        <div class="flex-grow flex flex-col justify-center items-center gap-4">
+                            <!-- 宇宙圖樣：星雲/多星環 -->
+                            <div class="w-20 h-20 text-purple-400 nebula-glow">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
+                                    <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-30 12 12)" />
+                                    <ellipse cx="12" cy="12" rx="6" ry="2.5" transform="rotate(30 12 12)" />
+                                    <circle cx="12" cy="12" r="2" />
+                                </svg>
+                            </div>
+                            <span class="text-xs tracking-wider text-purple-300 font-medium">深空星雲</span>
+                        </div>
+                        <div class="text-center text-[10px] text-slate-500 font-mono">CARD BACK</div>
+                    </div>
+                    <!-- 牌面 (結果) -->
+                    <div id="card-result-1" class="card-back w-full h-full absolute rounded-2xl p-[2px]">
+                        <!-- 動態填充內容 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 牌卡 3：日冕超新星 -->
+            <div onclick="selectCard(2)" id="card-wrapper-2" class="card-container floating-delay-2 cursor-pointer w-full max-w-[180px] mx-auto h-[280px] transition-all duration-700 hover:scale-105">
+                <div id="card-inner-2" class="card-inner w-full h-full relative">
+                    <!-- 牌背 -->
+                    <div class="card-front w-full h-full absolute rounded-2xl border-2 border-pink-500/50 bg-gradient-to-b from-pink-950 via-slate-900 to-slate-950 p-4 flex flex-col justify-between shadow-2xl shadow-pink-500/20">
+                        <div class="flex justify-between items-center text-xs text-pink-400 font-mono">
+                            <span>COSMOS</span>
+                            <span>Ⅲ</span>
+                        </div>
+                        <div class="flex-grow flex flex-col justify-center items-center gap-4">
+                            <!-- 宇宙圖樣：耀眼恆星/超新星 -->
+                            <div class="w-20 h-20 text-pink-400 nebula-glow">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
+                                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /><circle cx="12" cy="12" r="4" /></svg>
+                            </div>
+                            <span class="text-xs tracking-wider text-pink-300 font-medium">日冕超新星</span>
+                        </div>
+                        <div class="text-center text-[10px] text-slate-500 font-mono">CARD BACK</div>
+                    </div>
+                    <!-- 牌面 (結果) -->
+                    <div id="card-result-2" class="card-back w-full h-full absolute rounded-2xl p-[2px]">
+                        <!-- 動態填充內容 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 牌卡 4：奇異黑洞 -->
+            <div onclick="selectCard(3)" id="card-wrapper-3" class="card-container floating-delay-3 cursor-pointer w-full max-w-[180px] mx-auto h-[280px] transition-all duration-700 hover:scale-105">
+                <div id="card-inner-3" class="card-inner w-full h-full relative">
+                    <!-- 牌背 -->
+                    <div class="card-front w-full h-full absolute rounded-2xl border-2 border-emerald-500/50 bg-gradient-to-b from-emerald-950 via-slate-900 to-slate-950 p-4 flex flex-col justify-between shadow-2xl shadow-emerald-500/20">
+                        <div class="flex justify-between items-center text-xs text-emerald-400 font-mono">
+                            <span>COSMOS</span>
+                            <span>Ⅳ</span>
+                        </div>
+                        <div class="flex-grow flex flex-col justify-center items-center gap-4">
+                            <!-- 宇宙圖樣：旋渦/黑洞 -->
+                            <div class="w-20 h-20 text-emerald-400 nebula-glow">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
+                                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /><path d="M12 12c0 2.5-1.5 4.5-3.5 4.5S5 14.5 5 12" /><path d="M12 12c0-2.5 1.5-4.5 3.5-4.5s3.5 2 3.5 4.5" /></svg>
+                            </div>
+                            <span class="text-xs tracking-wider text-emerald-300 font-medium">奇異黑洞</span>
+                        </div>
+                        <div class="text-center text-[10px] text-slate-500 font-mono">CARD BACK</div>
+                    </div>
+                    <!-- 牌面 (結果) -->
+                    <div id="card-result-3" class="card-back w-full h-full absolute rounded-2xl p-[2px]">
+                        <!-- 動態填充內容 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 牌卡 5：黃金熾星 -->
+            <div onclick="selectCard(4)" id="card-wrapper-4" class="card-container floating-delay-4 cursor-pointer w-full max-w-[180px] mx-auto h-[280px] transition-all duration-700 hover:scale-105">
+                <div id="card-inner-4" class="card-inner w-full h-full relative">
+                    <!-- 牌背 -->
+                    <div class="card-front w-full h-full absolute rounded-2xl border-2 border-amber-500/50 bg-gradient-to-b from-amber-950 via-slate-900 to-slate-950 p-4 flex flex-col justify-between shadow-2xl shadow-amber-500/20">
+                        <div class="flex justify-between items-center text-xs text-amber-400 font-mono">
+                            <span>COSMOS</span>
+                            <span>Ⅴ</span>
+                        </div>
+                        <div class="flex-grow flex flex-col justify-center items-center gap-4">
+                            <!-- 宇宙圖樣：閃耀星芒 -->
+                            <div class="w-20 h-20 text-amber-400 nebula-glow">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
+                                    <path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9Z" /><circle cx="12" cy="12" r="2" /></svg>
+                            </div>
+                            <span class="text-xs tracking-wider text-amber-300 font-medium">黃金熾星</span>
+                        </div>
+                        <div class="text-center text-[10px] text-slate-500 font-mono">CARD BACK</div>
+                    </div>
+                    <!-- 牌面 (結果) -->
+                    <div id="card-result-4" class="card-back w-full h-full absolute rounded-2xl p-[2px]">
+                        <!-- 動態填充內容 -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 底部功能區 (預設隱藏，翻牌後顯示) -->
+    <footer class="relative z-10 text-center pb-8 pt-4 px-4 flex flex-col items-center justify-center gap-4">
+        <!-- AI 解析調用按鈕 -->
+        <button id="ai-trigger-btn" onclick="openAiModal()" class="hidden opacity-0 transform translate-y-4 transition-all duration-700 ease-out px-8 py-3 bg-gradient-to-r from-teal-500 via-cyan-500 to-indigo-500 rounded-full font-bold text-sm tracking-widest shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:scale-105 active:scale-95 duration-150 text-white">
+            ✨ 尋求 AI 星靈專屬解盤 ✨
+        </button>
+        <!-- 重啟星際占卜按鈕 -->
+        <button id="reset-btn" onclick="resetGame()" class="opacity-0 pointer-events-none transform translate-y-4 transition-all duration-700 ease-out px-8 py-2.5 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded-full font-semibold text-xs tracking-wider shadow-lg hover:scale-105 active:scale-95 duration-150 text-slate-300">
+            重啟星際占卜 🌀
+        </button>
+    </footer>
+
+    <!-- AI 星靈解盤 Modal -->
+    <div id="ai-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-500">
+        <div class="relative w-full max-w-lg bg-slate-900/95 border border-cyan-500/30 rounded-3xl p-6 md:p-8 shadow-2xl shadow-cyan-500/10 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
+            
+            <!-- 關閉按鈕 -->
+            <button onclick="closeAiModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+
+            <!-- 標題 -->
+            <div class="text-center">
+                <h3 class="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-teal-300 via-cyan-300 to-indigo-400">
+                    ✨ 星靈深度解盤 ✨
+                </h3>
+                <p class="text-xs text-slate-400 mt-1">
+                    宇宙星靈已就位，請賦予星軌前進的方向
+                </p>
+            </div>
+
+            <!-- 卡片狀態簡述 -->
+            <div class="bg-slate-950/50 rounded-2xl p-4 border border-slate-800 flex justify-between items-center">
+                <div>
+                    <div class="text-[10px] text-slate-500 tracking-wider">占卜卡牌</div>
+                    <div id="modal-card-name" class="text-sm font-bold text-slate-200">--</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-[10px] text-slate-500 tracking-wider">今日運勢</div>
+                    <div id="modal-card-luck" class="text-sm font-black text-cyan-400">--</div>
+                </div>
+            </div>
+
+            <!-- 問題輸入區 -->
+            <div class="flex flex-col gap-2">
+                <label class="text-xs text-slate-300 font-semibold flex items-center gap-1">
+                    <span>🔮 輸入你想指引的具體方向 (選填)：</span>
+                </label>
+                <input id="ai-question" type="text" placeholder="例如：今天與暗戀對象的互動、下午的面試、財運發展..." class="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500/60 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none transition-all" />
+            </div>
+
+            <!-- 召喚解盤按鈕 -->
+            <button id="ai-submit-btn" onclick="startAiInterpretation()" class="w-full py-3 bg-gradient-to-r from-teal-500 via-cyan-500 to-indigo-500 hover:from-teal-400 hover:to-indigo-400 rounded-xl font-bold text-sm tracking-widest shadow-md active:scale-98 transition-all text-white">
+                ✨ 召喚星靈解碼星軌 ✨
+            </button>
+
+            <!-- 解析結果輸出區 -->
+            <div id="ai-response-container" class="hidden flex flex-col gap-3 border-t border-slate-800/80 pt-4">
+                <div class="text-xs font-bold text-teal-400 flex items-center gap-1.5">
+                    <span class="animate-pulse">●</span> 星靈私語：
+                </div>
+                <!-- 載入中動畫 -->
+                <div id="ai-loading" class="hidden flex flex-col items-center justify-center py-8 gap-3">
+                    <div class="relative w-10 h-10">
+                        <div class="absolute inset-0 rounded-full border-2 border-t-teal-400 border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+                        <div class="absolute inset-1 rounded-full border-2 border-b-cyan-400 border-t-transparent border-r-transparent border-l-transparent animate-spin" style="animation-direction: reverse;"></div>
+                    </div>
+                    <span class="text-xs text-slate-400 animate-pulse">正在調度星際網路，凝聚星塵能量...</span>
+                </div>
+                <!-- 解析文字呈現 -->
+                <p id="ai-output" class="text-xs md:text-sm text-slate-300 leading-relaxed text-left whitespace-pre-line max-h-[220px] overflow-y-auto pr-1">
+                    <!-- AI 輸出內容 -->
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 運勢資料庫與遊戲邏輯 -->
+    <script>
+        // 初始化 Gemini API 金鑰 (由運行環境在執行時提供)
+        const apiKey = "";
+
+        // 5張卡片的宇宙符號設定（用在結果頁保持卡片主題一致）
+        const CARD_THEMES = [
+            {
+                name: '幻彩星系',
+                colorClass: 'from-indigo-500 to-cyan-500',
+                textClass: 'text-indigo-400',
+                borderClass: 'border-indigo-500/30',
+                bgClass: 'from-indigo-950 via-slate-900 to-slate-950',
+                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M12 3a9 9 0 0 0-9 9M12 21a9 9 0 0 0 9-9" /><path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M12 12c2-3 5-4 7-2s1 5-2 7" /><path d="M12 12c-2 3-5 4-7 2s-1-5 2-7" /></svg>`
+            },
+            {
+                name: '深空星雲',
+                colorClass: 'from-purple-500 to-fuchsia-500',
+                textClass: 'text-purple-400',
+                borderClass: 'border-purple-500/30',
+                bgClass: 'from-purple-950 via-slate-900 to-slate-950',
+                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-30 12 12)" /><ellipse cx="12" cy="12" rx="6" ry="2.5" transform="rotate(30 12 12)" /><circle cx="12" cy="12" r="2" /></svg>`
+            },
+            {
+                name: '日冕超新星',
+                colorClass: 'from-pink-500 to-rose-500',
+                textClass: 'text-pink-400',
+                borderClass: 'border-pink-500/30',
+                bgClass: 'from-pink-950 via-slate-900 to-slate-950',
+                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /><circle cx="12" cy="12" r="4" /></svg>`
+            },
+            {
+                name: '奇異黑洞',
+                colorClass: 'from-emerald-500 to-teal-500',
+                textClass: 'text-emerald-400',
+                borderClass: 'border-emerald-500/30',
+                bgClass: 'from-emerald-950 via-slate-900 to-slate-950',
+                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /><path d="M12 12c0 2.5-1.5 4.5-3.5 4.5S5 14.5 5 12" /><path d="M12 12c0-2.5 1.5-4.5 3.5-4.5s3.5 2 3.5 4.5" /></svg>`
+            },
+            {
+                name: '黃金熾星',
+                colorClass: 'from-amber-500 to-orange-500',
+                textClass: 'text-amber-400',
+                borderClass: 'border-amber-500/30',
+                bgClass: 'from-amber-950 via-slate-900 to-slate-950',
+                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9Z" /><circle cx="12" cy="12" r="2" /></svg>`
+            }
+        ];
+
+        // 運勢吉凶庫
+        const FORTUNES = [
+            {
+                luck: '超極致大吉',
+                score: '★★★★★',
+                luckColor: 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]',
+                description: '星軌連成一線，宇宙的能量正全速湧向你！今天你就是萬中無一的引力核心。',
+                notice: '順從直覺做出那些你一直猶豫不決的決定。今天不適合低調，勇敢展現你的光芒！'
+            },
+            {
+                luck: '耀眼大吉',
+                score: '★★★★☆',
+                luckColor: 'text-pink-400 drop-shadow-[0_0_8px_rgba(244,114,182,0.6)]',
+                description: '恆星爆發出璀璨光芒。今天人緣、財運極佳，任何事只要踏出第一步便能順風順水。',
+                notice: '記得向身邊的人傳遞溫暖，今天分享好運會讓你的正向磁場無限倍增。'
+            },
+            {
+                luck: '恆星中吉',
+                score: '★★★★☆',
+                luckColor: 'text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.6)]',
+                description: '潮汐與引力取得完美的和諧。今天心情平穩愉快，能妥善處理工作與生活上的各種繁雜瑣事。',
+                notice: '適合整理雜亂的桌面或進行深度思考，重整日常的軌道會帶來新的好運氣。'
+            },
+            {
+                luck: '晨曦小吉',
+                score: '★★★☆☆',
+                luckColor: 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]',
+                description: '幸運的小行星與你擦身而過，帶來意想不到的驚喜，或許是一杯好咖啡或一句溫暖的問候。',
+                notice: '保持敏銳的觀察力，別因為低頭滑手機而錯過了身邊微小但美好的星光。'
+            },
+            {
+                luck: '星雲末吉',
+                score: '★★★☆☆',
+                luckColor: 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]',
+                description: '塵埃與星際氣體正在緩慢凝聚，這代表你的好運還在醞釀中，只要耐心等待，終會綻放。',
+                notice: '今天做事請按部就班，不宜急躁。多給自己一點放鬆的時間，喝杯熱茶是不錯的選擇。'
+            },
+            {
+                luck: '引力平吉',
+                score: '★★☆☆☆',
+                luckColor: 'text-slate-300 drop-shadow-[0_0_8px_rgba(203,213,225,0.6)]',
+                description: '宇宙處於一種相對靜止與沉思的狀態。今天沒有太大的起伏，是個進行自我對話的好時機。',
+                notice: '適合讀完一本書、或是聽聽白噪音，減少與外界無效的社交能幫助你儲備靈魂能量。'
+            },
+            {
+                luck: '黑洞小凶',
+                score: '★★☆☆☆',
+                luckColor: 'text-fuchsia-400 drop-shadow-[0_0_8px_rgba(232,121,249,0.6)]',
+                description: '黑洞產生了些許的能量波動，容易吸附一些負面情緒。今天可能會感到有些疲倦、提不起勁。',
+                notice: '注意控制情緒，發言前先停頓三秒。遠離那些總是抱怨、消耗你心神的人或群組。'
+            },
+            {
+                luck: '暗物質大凶',
+                score: '★☆☆☆☆',
+                luckColor: 'text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]',
+                description: '星系間充滿未知的迷霧。今天可能會遇到小小的挫折、或是東西損壞等突發狀況，請保持冷靜。',
+                notice: '出門前檢查鑰匙與隨身物品。行車、走路多注意安全，別人的挑釁請笑而不答。過今天就好！'
+            }
+        ];
+
+        let hasSelected = false; // 紀錄是否已經完成占卜
+        let currentSelection = { cardIndex: null, fortune: null, theme: null };
+
+        // 洗牌演算法 (Shuffle)
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // 隨機分配運勢並寫入牌面
+        let currentAssignedFortunes = [];
+        function prepareFortunes() {
+            const shuffledFortunes = shuffle([...FORTUNES]);
+            currentAssignedFortunes = shuffledFortunes.slice(0, 5);
+            
+            for (let i = 0; i < 5; i++) {
+                const fortune = currentAssignedFortunes[i];
+                const theme = CARD_THEMES[i];
+                const resultDiv = document.getElementById(`card-result-${i}`);
+
+                // 動態構建牌面 HTML
+                resultDiv.innerHTML = `
+                    <div class="w-full h-full rounded-2xl bg-gradient-to-r ${theme.colorClass} p-[2px]">
+                        <div class="w-full h-full rounded-[14px] bg-slate-950 p-4 flex flex-col justify-between border border-white/10">
+                            <!-- 卡片頂部 -->
+                            <div class="flex justify-between items-center">
+                                <span class="text-[10px] font-mono tracking-wider ${theme.textClass}">${theme.name}</span>
+                                <div class="w-5 h-5 ${theme.textClass}">
+                                    ${theme.svg}
+                                </div>
+                            </div>
+                            
+                            <!-- 卡片中部：吉凶顯示 -->
+                            <div class="text-center my-2 flex-grow flex flex-col justify-center items-center">
+                                <div class="text-[9px] font-bold text-slate-400 tracking-widest uppercase mb-1">今日運勢</div>
+                                <div class="text-2xl md:text-3xl font-black ${fortune.luckColor} tracking-wide mb-1">
+                                    ${fortune.luck}
+                                </div>
+                                <div class="text-xs text-amber-300 tracking-widest">${fortune.score}</div>
+                                <p class="text-[11px] text-slate-300 mt-3 leading-relaxed text-left line-clamp-4 md:line-clamp-none">
+                                    ${fortune.description}
+                                </p>
+                            </div>
+                            
+                            <!-- 卡片底部：注意事項 -->
+                            <div class="border-t border-slate-800/80 pt-2">
+                                <div class="text-[9px] font-bold text-red-400/80 tracking-widest mb-1 flex items-center gap-1">
+                                    <span>⚠️ 宇宙指引</span>
+                                </div>
+                                <p class="text-[10px] text-slate-400 leading-normal text-left">
+                                    ${fortune.notice}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 選擇牌面
+        function selectCard(selectedIndex) {
+            if (hasSelected) return; // 避免重複點選
+            hasSelected = true;
+
+            // 存儲目前選取的卡牌與運勢，用於 AI 功能
+            currentSelection.cardIndex = selectedIndex;
+            currentSelection.theme = CARD_THEMES[selectedIndex];
+            currentSelection.fortune = currentAssignedFortunes[selectedIndex];
+
+            const grid = document.getElementById('cards-grid');
+            const subTitle = document.getElementById('sub-title');
+            
+            subTitle.innerHTML = `<span class="text-pink-400 font-semibold animate-pulse">✨ 這是星際投射給你的啟示 ✨</span>`;
+
+            // 1. 先處理所有卡片的外觀與淡出
+            for (let i = 0; i < 5; i++) {
+                const wrapper = document.getElementById(`card-wrapper-${i}`);
+                wrapper.classList.remove('floating', 'floating-delay-1', 'floating-delay-2', 'floating-delay-3', 'floating-delay-4');
+
+                if (i !== selectedIndex) {
+                    wrapper.style.opacity = '0';
+                    wrapper.style.transform = 'scale(0.8)';
+                    wrapper.style.pointerEvents = 'none';
+                    setTimeout(() => {
+                        wrapper.classList.add('hidden');
+                    }, 500);
+                }
+            }
+
+            // 2. 調整網格排版，讓選中的卡片在 500ms 後置中放大
+            setTimeout(() => {
+                grid.className = "flex justify-center items-center w-full max-w-sm mx-auto transition-all duration-700";
+                
+                const selectWrapper = document.getElementById(`card-wrapper-${selectedIndex}`);
+                selectWrapper.classList.remove('max-w-[180px]');
+                selectWrapper.classList.add('max-w-[280px]', 'w-[280px]', 'h-[420px]', 'scale-110');
+                
+                // 3. 執行 3D 翻轉動畫
+                setTimeout(() => {
+                    const selectInner = document.getElementById(`card-inner-${selectedIndex}`);
+                    selectInner.classList.add('card-flipped');
+
+                    // 4. 顯示重來按鈕與 AI 觸發按鈕
+                    const resetBtn = document.getElementById('reset-btn');
+                    resetBtn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+                    resetBtn.classList.add('opacity-100', 'translate-y-0');
+
+                    const aiTriggerBtn = document.getElementById('ai-trigger-btn');
+                    aiTriggerBtn.classList.remove('hidden', 'opacity-0', 'translate-y-4');
+                    aiTriggerBtn.classList.add('block', 'opacity-100', 'translate-y-0');
+                }, 400);
+
+            }, 550);
+        }
+
+        // 開啟 AI 解盤彈窗
+        function openAiModal() {
+            const modal = document.getElementById('ai-modal');
+            document.getElementById('modal-card-name').innerText = currentSelection.theme.name;
+            document.getElementById('modal-card-luck').innerText = currentSelection.fortune.luck;
+            
+            // 清空舊結果
+            document.getElementById('ai-question').value = "";
+            document.getElementById('ai-response-container').classList.add('hidden');
+            document.getElementById('ai-output').innerText = "";
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        // 關閉 AI 解盤彈窗
+        function closeAiModal() {
+            const modal = document.getElementById('ai-modal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        // 指數退避 API 呼叫函數
+        async function fetchWithRetry(url, options, retries = 5, delay = 1000) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) {
+                    throw new Error(`HTTP 錯誤！狀態碼：${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                if (retries > 0) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchWithRetry(url, options, retries - 1, delay * 2);
+                }
+                throw error;
+            }
+        }
+
+        // 調用 Gemini API 進行 AI 星靈深度解析
+        async function startAiInterpretation() {
+            const questionInput = document.getElementById('ai-question').value.trim();
+            const loading = document.getElementById('ai-loading');
+            const output = document.getElementById('ai-output');
+            const responseContainer = document.getElementById('ai-response-container');
+            const submitBtn = document.getElementById('ai-submit-btn');
+
+            // 顯示載入狀態
+            responseContainer.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            output.innerText = "";
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'pointer-events-none');
+
+            // 構建提示詞 (Prompt) 與 系統提示詞 (System Instruction)
+            const userQuestion = questionInput || "我今天的整體發展與身心能量平衡";
+            const systemPrompt = "你是一位精通西方占星學、星辰引力與宇宙神祕學的「宇宙星靈（Cosmic Star Spirit）」。請根據使用者抽到的宇宙圖卡主題、今日的運勢吉凶、吉凶描述，以及他們特別詢問的具體問題，給予富有哲理、神秘、溫暖且充滿實用建議的專屬占卜解盤。請使用繁體中文，語氣要富有共鳴、神祕且溫柔，並多使用星空、能量共振、引力軌道、星塵等宇宙系詞彙。";
+            
+            const userPrompt = `
+                我今天抽到的宇宙卡牌是：${currentSelection.theme.name}
+                今日吉凶運勢是：${currentSelection.fortune.luck}
+                系統給予的今日基礎概述：${currentSelection.fortune.description}
+                我今天特別想尋求宇宙星靈指引的方向是：${userQuestion}
+
+                請為我進行深度的星盤解碼與宇宙私語指引！
+            `;
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            try {
+                const result = await fetchWithRetry(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const replyText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (replyText) {
+                    loading.classList.add('hidden');
+                    typeWriterEffect(output, replyText);
+                } else {
+                    throw new Error("無法解析星靈反饋之能量。");
+                }
+            } catch (error) {
+                loading.classList.add('hidden');
+                output.innerHTML = `<span class="text-red-400">⚠️ 星靈通道暫時受到星際風暴干擾（無法連接到 API）。請稍後再次嘗試召喚，或者重新抽牌聚集能量！</span>`;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'pointer-events-none');
+            }
+        }
+
+        // 打字機動畫特效
+        function typeWriterEffect(element, text) {
+            element.innerText = "";
+            element.classList.add('typing-cursor');
+            let index = 0;
+            const speed = 25; // 每個字的打字速度 (ms)
+
+            function type() {
+                if (index < text.length) {
+                    element.innerText += text.charAt(index);
+                    index++;
+                    setTimeout(type, speed);
+                } else {
+                    element.classList.remove('typing-cursor');
+                }
+            }
+            type();
+        }
+
+        // 重置遊戲
+        function resetGame() {
+            hasSelected = false;
+            currentSelection = { cardIndex: null, fortune: null, theme: null };
+
+            // 隱藏重來按鈕與 AI 按鈕
+            const resetBtn = document.getElementById('reset-btn');
+            resetBtn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+            resetBtn.classList.remove('opacity-100', 'translate-y-0');
+
+            const aiTriggerBtn = document.getElementById('ai-trigger-btn');
+            aiTriggerBtn.classList.add('opacity-0', 'translate-y-4');
+            aiTriggerBtn.classList.remove('block', 'opacity-100', 'translate-y-0');
+            setTimeout(() => { aiTriggerBtn.classList.add('hidden'); }, 400);
+
+            // 還原副標題
+            const subTitle = document.getElementById('sub-title');
+            subTitle.innerHTML = `閉上雙眼，深呼吸三次... 傾聽星塵的耳語，<br>從五張神祕的宇宙圖卡中，選取一張屬於你的今日啟示。`;
+
+            // 先將所有的 3D 旋轉還原
+            for (let i = 0; i < 5; i++) {
+                const inner = document.getElementById(`card-inner-${i}`);
+                inner.classList.remove('card-flipped');
+            }
+
+            // 重新洗牌並生成新的運勢（確保每次點選都是隨機吉凶）
+            prepareFortunes();
+
+            // 延遲還原卡片佈局與顯示，確保翻牌先復原
+            setTimeout(() => {
+                const grid = document.getElementById('cards-grid');
+                grid.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-6 max-w-6xl w-full justify-center items-center transition-all duration-700";
+
+                for (let i = 0; i < 5; i++) {
+                    const wrapper = document.getElementById(`card-wrapper-${i}`);
+                    
+                    wrapper.classList.remove('hidden', 'max-w-[280px]', 'w-[280px]', 'h-[420px]', 'scale-110');
+                    wrapper.classList.add('max-w-[180px]');
+                    
+                    if (i === 0) wrapper.classList.add('floating');
+                    if (i === 1) wrapper.classList.add('floating-delay-1');
+                    if (i === 2) wrapper.classList.add('floating-delay-2');
+                    if (i === 3) wrapper.classList.add('floating-delay-3');
+                    if (i === 4) wrapper.classList.add('floating-delay-4');
+
+                    wrapper.style.opacity = '1';
+                    wrapper.style.transform = 'scale(1)';
+                    wrapper.style.pointerEvents = 'auto';
+                }
+            }, 400);
+        }
+
+        // 初始化載入
+        window.onload = function() {
+            prepareFortunes();
+        };
+    </script>
+</body>
+</html>
