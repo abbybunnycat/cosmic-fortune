@@ -3,768 +3,616 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>今日宇宙運勢占卜 - 命運的星圖</title>
-    <!-- 引入 Tailwind CSS 與 Google 字型 -->
+    <title>今日宇宙運勢占卜 - Cosmic Fortune</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght=300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome for stars and celestial icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Cinzel:wght@400;600;700;900&display=swap');
+
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background: radial-gradient(circle at center, #070913 0%, #010205 100%);
-            overflow-y: auto;
+            background-color: #02000a;
             overflow-x: hidden;
-            min-height: 100vh;
         }
 
-        /* 閃爍星空背景 */
+        .font-celestial {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* 縮放與漸變背景動畫 */
+        @keyframes spaceGlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .galaxy-bg {
+            background: radial-gradient(circle at 50% 50%, #0c0721 0%, #02000a 100%);
+            background-size: 200% 200%;
+            animation: spaceGlow 20s ease infinite;
+        }
+
+        /* 穩定閃爍星星背景 */
         .stars {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 0;
             pointer-events: none;
             background-image: 
-                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
                 radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
-                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px);
-            background-size: 550px 550px, 350px 350px, 250px 250px;
-            background-position: 0 0, 40px 60px, 130px 270px;
-            animation: starFlicker 60s linear infinite;
+                radial-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.1) 1.5px, transparent 40px);
+            background-size: 300px 300px, 150px 150px;
+            background-repeat: repeat;
+            opacity: 0.4;
+            z-index: 0;
         }
 
-        @keyframes starFlicker {
-            from { background-position: 0 0, 40px 60px, 130px 270px; }
-            to { background-position: 550px 1100px, 1400px 350px, 1250px -1080px; }
+        /* 旋轉星軌效果 */
+        .nebula {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 650px;
+            height: 650px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, rgba(6, 182, 212, 0.04) 50%, transparent 70%);
+            transform: translate(-50%, -50%);
+            filter: blur(60px);
+            pointer-events: none;
+            animation: rotateNebula 50s linear infinite;
+            z-index: 0;
         }
 
-        /* 3D 翻牌效果 */
+        @keyframes rotateNebula {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* 牌卡 3D 翻轉與物理 */
         .card-container {
-            perspective: 1000px;
+            perspective: 1200px;
         }
 
         .card-inner {
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.85s cubic-bezier(0.2, 0.8, 0.2, 1.15);
             transform-style: preserve-3d;
+            position: relative;
+            width: 100%;
+            height: 100%;
         }
 
-        .card-flipped {
+        /* Flipped 狀態：旋轉 180 度顯示正面 */
+        .card-container.flipped .card-inner {
             transform: rotateY(180deg);
         }
 
-        .card-front, .card-back {
+        .card-cover, .card-face {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
             backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
+            border-radius: 1.25rem;
+            overflow: hidden;
         }
 
-        .card-back {
+        /* 初始狀態：Cover 面朝玩家 (0度) */
+        .card-cover {
+            transform: rotateY(0deg);
+            z-index: 2;
+        }
+
+        /* 初始狀態：Face 面朝後方 (180度) */
+        .card-face {
             transform: rotateY(180deg);
+            z-index: 1;
         }
 
-        /* 牌面浮動動畫 */
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+        /* 頂級外框發光呼吸燈 */
+        @keyframes goldGlow {
+            0%, 100% { border-color: rgba(245, 158, 11, 0.25); box-shadow: 0 0 15px rgba(245, 158, 11, 0.1); }
+            50% { border-color: rgba(245, 158, 11, 0.55); box-shadow: 0 0 25px rgba(245, 158, 11, 0.25); }
         }
 
-        .floating {
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        .floating-delay-1 { animation: float 6s ease-in-out infinite 1.2s; }
-        .floating-delay-2 { animation: float 6s ease-in-out infinite 2.4s; }
-        .floating-delay-3 { animation: float 6s ease-in-out infinite 3.6s; }
-        .floating-delay-4 { animation: float 6s ease-in-out infinite 4.8s; }
-
-        /* NASA 級星雲動態光暈 */
-        .nebula-glow-pillars { filter: drop-shadow(0 0 15px rgba(6, 182, 212, 0.7)); }
-        .nebula-glow-violet { filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.7)); }
-        .nebula-glow-orion { filter: drop-shadow(0 0 15px rgba(244, 63, 94, 0.7)); }
-        .nebula-glow-deep { filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.7)); }
-        .nebula-glow-gold { filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.7)); }
-
-        /* NASA 實照漸層疊加 */
-        .nasa-bg-pillars {
-            background: 
-                radial-gradient(circle at 15% 15%, rgba(6, 182, 212, 0.35) 0%, transparent 55%),
-                radial-gradient(circle at 85% 25%, rgba(234, 179, 8, 0.3) 0%, transparent 60%),
-                radial-gradient(circle at 45% 75%, rgba(79, 70, 229, 0.3) 0%, transparent 70%),
-                radial-gradient(circle at 50% 50%, #030712 0%, #010204 100%);
-        }
-        .nasa-bg-violet {
-            background: 
-                radial-gradient(circle at 35% 45%, rgba(168, 85, 247, 0.45) 0%, transparent 50%),
-                radial-gradient(circle at 75% 65%, rgba(219, 39, 119, 0.35) 0%, transparent 60%),
-                radial-gradient(circle at 50% 15%, rgba(124, 58, 237, 0.25) 0%, transparent 65%),
-                radial-gradient(circle at 50% 50%, #030712 0%, #010204 100%);
-        }
-        .nasa-bg-orion {
-            background: 
-                radial-gradient(circle at 50% 50%, rgba(244, 63, 94, 0.45) 0%, transparent 45%),
-                radial-gradient(circle at 20% 70%, rgba(6, 182, 212, 0.35) 0%, transparent 60%),
-                radial-gradient(circle at 80% 30%, rgba(249, 115, 22, 0.35) 0%, transparent 60%),
-                radial-gradient(circle at 50% 50%, #030712 0%, #010204 100%);
-        }
-        .nasa-bg-deep {
-            background: 
-                radial-gradient(circle at 50% 30%, rgba(56, 189, 248, 0.35) 0%, transparent 50%),
-                radial-gradient(circle at 40% 70%, rgba(30, 41, 59, 0.8) 0%, transparent 70%),
-                radial-gradient(circle at 50% 50%, #02040a 0%, #010103 100%);
-        }
-        .nasa-bg-gold {
-            background: 
-                radial-gradient(circle at 25% 25%, rgba(245, 158, 11, 0.35) 0%, transparent 55%),
-                radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.2) 0%, transparent 65%),
-                radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.8) 0%, #010204 100%);
+        .gold-border-glow {
+            animation: goldGlow 5s infinite ease-in-out;
         }
 
-        /* 局部美化滾動條 */
-        .custom-scroll::-webkit-scrollbar {
-            width: 4px;
+        /* 牌卡懸停微調 (優雅浮動，絕不造成版面震動) */
+        .hover-lift {
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease;
         }
-        .custom-scroll::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 999px;
+        @media (hover: hover) {
+            .hover-lift:hover {
+                transform: translateY(-8px) scale(1.03);
+                box-shadow: 0 20px 35px rgba(0, 0, 0, 0.8);
+            }
         }
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 999px;
+
+        /* 牌卡間歇式神秘幽雅漂浮 */
+        @keyframes gentleFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
         }
-        .custom-scroll::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.4);
-        }
+
+        .float-0 { animation: gentleFloat 6s ease-in-out infinite; }
+        .float-1 { animation: gentleFloat 6.5s ease-in-out infinite 0.7s; }
+        .float-2 { animation: gentleFloat 5.8s ease-in-out infinite 1.4s; }
+        .float-3 { animation: gentleFloat 6.2s ease-in-out infinite 2.1s; }
+        .float-4 { animation: gentleFloat 7s ease-in-out infinite 2.8s; }
     </style>
 </head>
-<body class="text-slate-100 min-h-screen flex flex-col items-center justify-start relative pb-12">
+<body class="galaxy-bg min-h-screen text-gray-100 flex flex-col justify-between relative overflow-y-auto px-4 py-8 md:p-12 selection:bg-purple-500/30 selection:text-white">
     
-    <!-- 星空背景 -->
+    <!-- 穩定的背景特效 -->
     <div class="stars"></div>
+    <div class="nebula"></div>
 
     <!-- 頂部標題區 -->
-    <header class="relative z-10 text-center pt-10 pb-4 px-4 shrink-0">
-        <h1 class="text-3xl md:text-5xl font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 mb-1.5 drop-shadow-lg">
+    <header class="text-center z-10 max-w-2xl mx-auto mb-6 transition-all duration-700" id="gameHeader">
+        <h1 class="font-celestial text-3xl md:text-5xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-amber-200 to-cyan-300 drop-shadow-[0_4px_12px_rgba(168,85,247,0.35)]">
             今日宇宙運勢占卜
         </h1>
-        <p id="sub-title" class="text-xs md:text-sm text-slate-400 tracking-wide max-w-md mx-auto">
-            閉上雙眼，深呼吸三次... 傾聽星塵的耳語，<br>從五張神祕的宇宙圖卡中，選取一張屬於你的今日啟示。
+        <p class="text-[10px] md:text-xs text-amber-200/80 mt-3 tracking-[0.3em] font-celestial uppercase">
+            — THE COSMIC REVELATION —
+        </p>
+        <p class="text-sm md:text-base text-purple-200/90 mt-5 max-w-md mx-auto leading-relaxed font-light" id="gameSubtitle">
+            澄淨思緒，凝望繁星。<br>憑直覺點選一張與你當下靈魂共鳴的星譜牌卡...
         </p>
     </header>
 
-    <!-- 主卡片擺放區：平時大廳保持最純淨的 5 張卡片展示，不放任何雜亂、隱藏或可能重疊的按鈕結構 -->
-    <main class="w-full max-w-6xl px-4 flex flex-col items-center justify-center gap-6 mt-4 shrink-0 relative z-10">
-        <!-- 五欄網格：前後尺寸牢牢鎖定為 280px * 410px，支持手機左右滑動 -->
-        <div id="cards-grid" class="flex overflow-x-auto snap-x snap-mandatory gap-6 py-4 px-4 w-full md:flex-wrap md:overflow-visible justify-start md:justify-center items-center custom-scroll">
-            
-            <!-- 牌卡 1：創生之柱 -->
-            <div onclick="selectCard(0)" id="card-wrapper-0" class="card-container floating cursor-pointer w-[280px] h-[410px] transition-all duration-300 hover:scale-105 shrink-0 snap-center">
-                <div class="card-inner w-full h-full relative">
-                    <div class="card-front w-full h-full absolute rounded-2xl border border-cyan-500/30 nasa-bg-pillars p-5 flex flex-col justify-between shadow-[inset_0_0_20px_rgba(6,182,212,0.15)] shadow-2xl shadow-cyan-500/10 hover:border-cyan-400/60 transition-all duration-300 relative overflow-hidden">
-                        <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-90" viewBox="0 0 100 150">
-                            <defs>
-                                <radialGradient id="star-glow" cx="50%" cy="50%" r="50%">
-                                    <stop offset="0%" stop-color="#fff" stop-opacity="1"/>
-                                    <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
-                                </radialGradient>
-                            </defs>
-                            <circle cx="10" cy="15" r="0.4" fill="#fff" opacity="0.3"/>
-                            <circle cx="92" cy="28" r="0.3" fill="#fff" opacity="0.5"/>
-                            <circle cx="38" cy="85" r="0.5" fill="#e0f7fa" opacity="0.6"/>
-                            <circle cx="78" cy="120" r="0.4" fill="#fff" opacity="0.4"/>
-                            <circle cx="18" cy="130" r="0.5" fill="#fff" opacity="0.5"/>
-                            <circle cx="85" cy="14" r="0.3" fill="#fff" opacity="0.3"/>
-                            <circle cx="58" cy="62" r="0.4" fill="#fff" opacity="0.4"/>
-                            <circle cx="75" cy="40" r="2.5" fill="url(#star-glow)"/>
-                            <circle cx="75" cy="40" r="0.8" fill="#fff"/>
-                            <path d="M 20,150 C 35,110 32,80 25,60 C 23,55 17,50 22,40 C 26,30 35,45 42,55 C 50,70 48,110 45,150 Z" fill="#0c192c" opacity="0.65" />
-                        </svg>
-                        <div class="flex justify-between items-center text-[10px] text-cyan-400/80 font-mono tracking-wider relative z-10">
-                            <span>COSMOS</span>
-                            <span>Ⅰ</span>
-                        </div>
-                        <div class="flex-grow flex flex-col justify-center items-center gap-4 relative z-10">
-                            <div class="w-20 h-20 text-cyan-400/90 nebula-glow-pillars">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
-                                    <path d="M12 3a9 9 0 0 0-9 9M12 21a9 9 0 0 0 9-9" />
-                                    <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-                                    <path d="M12 12c2-3 5-4 7-2s1 5-2 7" />
-                                    <path d="M12 12c-2 3-5 4-7 2s-1-5 2-7" />
-                                </svg>
-                            </div>
-                            <span class="text-sm tracking-widest text-cyan-300 font-bold">創生之柱</span>
-                        </div>
-                        <div class="text-center text-[9px] text-slate-500 font-mono relative z-10 tracking-widest">DEEP SPACE</div>
-                    </div>
-                    <!-- 牌面 (結果預留區) -->
-                    <div id="card-result-0" class="card-back w-full h-full absolute rounded-2xl p-[2px]"></div>
-                </div>
+    <!-- 占卜主舞台 -->
+    <main class="w-full max-w-6xl mx-auto my-auto z-10 flex flex-col items-center justify-center min-h-[500px]">
+        <!-- 5張牌卡展示區域 -->
+        <div id="cardsStage" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-5 md:gap-7 w-full justify-center transition-all duration-1000 py-6">
+            <!-- 牌卡將透過 JS 動態生成 -->
+        </div>
+
+        <!-- 占卜結果詳細呈現區域 (預設隱藏) -->
+        <div id="resultStage" class="hidden w-full max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-center gap-8 md:gap-14 py-4 opacity-0 transition-all duration-1000">
+            <!-- 放大後的被選中牌卡 -->
+            <div id="selectedCardPlaceholder" class="w-[240px] h-[380px] md:w-[280px] md:h-[440px] shrink-0">
+                <!-- 牌卡會被克隆到這裡 -->
             </div>
 
-            <!-- 牌卡 2：仙女座紫星雲 -->
-            <div onclick="selectCard(1)" id="card-wrapper-1" class="card-container floating-delay-1 cursor-pointer w-[280px] h-[410px] transition-all duration-300 hover:scale-105 shrink-0 snap-center">
-                <div class="card-inner w-full h-full relative">
-                    <div class="card-front w-full h-full absolute rounded-2xl border border-purple-500/30 nasa-bg-violet p-5 flex flex-col justify-between shadow-[inset_0_0_20px_rgba(168,85,247,0.15)] shadow-2xl shadow-purple-500/10 hover:border-purple-400/60 transition-all duration-300 relative overflow-hidden">
-                        <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-90" viewBox="0 0 100 150">
-                            <defs>
-                                <radialGradient id="purple-glow" cx="50%" cy="50%" r="50%">
-                                    <stop offset="0%" stop-color="#fff" stop-opacity="1"/>
-                                    <stop offset="100%" stop-color="#e879f9" stop-opacity="0"/>
-                                </radialGradient>
-                            </defs>
-                            <circle cx="15" cy="35" r="0.4" fill="#fff" opacity="0.6"/>
-                            <circle cx="82" cy="18" r="0.3" fill="#fff" opacity="0.4"/>
-                            <circle cx="28" cy="98" r="0.4" fill="#fff" opacity="0.5"/>
-                            <circle cx="88" cy="112" r="0.3" fill="#fff" opacity="0.7" class="animate-pulse"/>
-                            <circle cx="12" cy="78" r="0.5" fill="#fff" opacity="0.4"/>
-                            <circle cx="45" cy="55" r="3.5" fill="url(#purple-glow)"/>
-                            <circle cx="45" cy="55" r="0.7" fill="#fff"/>
-                        </svg>
-                        <div class="flex justify-between items-center text-[10px] text-purple-400/80 font-mono tracking-wider relative z-10">
-                            <span>COSMOS</span>
-                            <span>Ⅱ</span>
-                        </div>
-                        <div class="flex-grow flex flex-col justify-center items-center gap-4 relative z-10">
-                            <div class="w-20 h-20 text-purple-400/90 nebula-glow-violet">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
-                                    <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-30 12 12)" />
-                                    <ellipse cx="12" cy="12" rx="6" ry="2.5" transform="rotate(30 12 12)" />
-                                    <circle cx="12" cy="12" r="2" />
-                                </svg>
-                            </div>
-                            <span class="text-sm tracking-widest text-purple-300 font-bold">仙女座紫星雲</span>
-                        </div>
-                        <div class="text-center text-[9px] text-slate-500 font-mono relative z-10 tracking-widest">DEEP SPACE</div>
+            <!-- 詳細命理說明 -->
+            <div class="flex-grow w-full md:w-auto bg-black/45 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] relative overflow-hidden flex flex-col justify-between">
+                <!-- 精美背景裝飾 -->
+                <div class="absolute -top-12 -right-12 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl"></div>
+                <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl"></div>
+
+                <div>
+                    <!-- 卡片名稱 -->
+                    <div class="flex items-center gap-3 mb-2">
+                        <span id="resultCardType" class="text-[11px] font-semibold tracking-wider px-3 py-1 rounded-full text-white">
+                            <!-- 牌卡元素屬性 -->
+                        </span>
+                        <h3 id="resultCardName" class="text-xl md:text-2xl font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-100 to-gray-300 font-celestial">
+                            <!-- 牌卡名稱 -->
+                        </h3>
                     </div>
-                    <!-- 牌面 (結果預留區) -->
-                    <div id="card-result-1" class="card-back w-full h-full absolute rounded-2xl p-[2px]"></div>
+
+                    <!-- 今日吉凶 -->
+                    <div class="flex items-baseline gap-2 mb-6 border-b border-white/10 pb-4">
+                        <span class="text-xs text-purple-300/70 font-light">今日星曆引力：</span>
+                        <span id="resultFortune" class="text-2xl md:text-3xl font-black tracking-widest">
+                            <!-- 今日吉凶 -->
+                        </span>
+                    </div>
+
+                    <!-- 詳細解說 -->
+                    <div class="space-y-5 text-gray-200 text-sm md:text-base leading-relaxed mb-6">
+                        <div>
+                            <h4 class="text-xs text-purple-300 font-semibold tracking-widest mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> 星際能量分析
+                            </h4>
+                            <p id="resultDescription" class="font-light pl-4 border-l border-purple-500/30 text-gray-300 text-justify">
+                                <!-- 詳細解說內容 -->
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="text-xs text-cyan-300 font-semibold tracking-widest mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-compass"></i> 宇宙指引方針
+                            </h4>
+                            <p id="resultGuidance" class="text-amber-100/90 italic font-medium pl-4 border-l border-cyan-500/30 text-justify">
+                                <!-- 宇宙指引內容 -->
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部按鈕區 -->
+                <div class="flex flex-wrap gap-4 pt-4 border-t border-white/10 mt-auto">
+                    <button onclick="shareFortune()" class="flex-1 min-w-[130px] bg-gradient-to-r from-purple-600/90 to-indigo-600/90 hover:from-purple-500 hover:to-indigo-500 text-white font-medium text-sm py-3 px-4 rounded-xl transition duration-300 shadow-lg shadow-purple-900/30 flex items-center justify-center gap-2 border border-purple-500/30">
+                        <i class="fa-solid fa-share-nodes text-xs"></i> 分享今日星啟
+                    </button>
+                    <button onclick="restartDivination()" class="flex-1 min-w-[130px] bg-white/5 hover:bg-white/15 text-white border border-white/15 font-medium text-sm py-3 px-4 rounded-xl transition duration-300 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-rotate-right text-xs"></i> 重啟星軌連結
+                    </button>
                 </div>
             </div>
-
-            <!-- 牌卡 3：獵戶座恆星爆發 -->
-            <div onclick="selectCard(2)" id="card-wrapper-2" class="card-container floating-delay-2 cursor-pointer w-[280px] h-[410px] transition-all duration-300 hover:scale-105 shrink-0 snap-center">
-                <div class="card-inner w-full h-full relative">
-                    <div class="card-front w-full h-full absolute rounded-2xl border border-pink-500/30 nasa-bg-orion p-5 flex flex-col justify-between shadow-[inset_0_0_20px_rgba(244,63,94,0.15)] shadow-2xl shadow-pink-500/10 hover:border-pink-400/60 transition-all duration-300 relative overflow-hidden">
-                        <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-90" viewBox="0 0 100 150">
-                            <defs>
-                                <radialGradient id="orion-glow" cx="50%" cy="50%" r="50%">
-                                    <stop offset="0%" stop-color="#fff" stop-opacity="1"/>
-                                    <stop offset="50%" stop-color="#fda4af" stop-opacity="0.8"/>
-                                    <stop offset="100%" stop-color="#f43f5e" stop-opacity="0"/>
-                                </radialGradient>
-                            </defs>
-                            <circle cx="8" cy="45" r="0.4" fill="#fff" opacity="0.6"/>
-                            <circle cx="92" cy="72" r="0.3" fill="#fff" opacity="0.5"/>
-                            <circle cx="50" cy="65" r="6.0" fill="url(#orion-glow)"/>
-                            <circle cx="50" cy="65" r="0.9" fill="#fff"/>
-                            <line x1="50" y1="50" x2="50" y2="80" stroke="#fff" stroke-width="0.5" opacity="0.8" />
-                            <line x1="35" y1="65" x2="65" y2="65" stroke="#fff" stroke-width="0.5" opacity="0.8" />
-                        </svg>
-                        <div class="flex justify-between items-center text-[10px] text-pink-400/80 font-mono tracking-wider relative z-10">
-                            <span>COSMOS</span>
-                            <span>Ⅲ</span>
-                        </div>
-                        <div class="flex-grow flex flex-col justify-center items-center gap-4 relative z-10">
-                            <div class="w-20 h-20 text-pink-400/90 nebula-glow-orion">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
-                                    <circle cx="12" cy="12" r="4" />
-                                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-                                </svg>
-                            </div>
-                            <span class="text-sm tracking-widest text-pink-300 font-bold">獵戶座恆星爆發</span>
-                        </div>
-                        <div class="text-center text-[9px] text-slate-500 font-mono relative z-10 tracking-widest">DEEP SPACE</div>
-                    </div>
-                    <!-- 牌面 (結果預留區) -->
-                    <div id="card-result-2" class="card-back w-full h-full absolute rounded-2xl p-[2px]"></div>
-                </div>
-            </div>
-
-            <!-- 牌卡 4：深空黯夜星河 -->
-            <div onclick="selectCard(3)" id="card-wrapper-3" class="card-container floating-delay-3 cursor-pointer w-[280px] h-[410px] transition-all duration-300 hover:scale-105 shrink-0 snap-center">
-                <div class="card-inner w-full h-full relative">
-                    <div class="card-front w-full h-full absolute rounded-2xl border border-sky-500/30 nasa-bg-deep p-5 flex flex-col justify-between shadow-[inset_0_0_20px_rgba(56,189,248,0.15)] shadow-2xl shadow-sky-500/10 hover:border-sky-400/60 transition-all duration-300 relative overflow-hidden">
-                        <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-90" viewBox="0 0 100 150">
-                            <path d="M -10,20 Q 30,60 70,110 T 110,160 L 120,140 Q 80,90 40,40 T -20,0 Z" fill="#38bdf8" opacity="0.18" filter="blur(4px)" />
-                            <circle cx="12" cy="18" r="0.3" fill="#fff" opacity="0.6"/>
-                            <circle cx="22" cy="32" r="0.4" fill="#fff" opacity="0.8"/>
-                            <circle cx="45" cy="64" r="0.5" fill="#bae6fd" opacity="0.9" class="animate-pulse"/>
-                            <circle cx="58" cy="80" r="0.4" fill="#fff" opacity="0.7"/>
-                        </svg>
-                        <div class="flex justify-between items-center text-[10px] text-sky-400/80 font-mono tracking-wider relative z-10">
-                            <span>COSMOS</span>
-                            <span>Ⅳ</span>
-                        </div>
-                        <div class="flex-grow flex flex-col justify-center items-center gap-4 relative z-10">
-                            <div class="w-20 h-20 text-sky-400/90 nebula-glow-deep">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
-                                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
-                                    <path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
-                                    <path d="M12 12c0 2.5-1.5 4.5-3.5 4.5S5 14.5 5 12" />
-                                    <path d="M12 12c0-2.5 1.5-4.5 3.5-4.5s3.5 2 3.5 4.5" />
-                                </svg>
-                            </div>
-                            <span class="text-sm tracking-widest text-sky-300 font-bold">深空黯夜星河</span>
-                        </div>
-                        <div class="text-center text-[9px] text-slate-500 font-mono relative z-10 tracking-widest">DEEP SPACE</div>
-                    </div>
-                    <!-- 牌面 (結果預留區) -->
-                    <div id="card-result-3" class="card-back w-full h-full absolute rounded-2xl p-[2px]"></div>
-                </div>
-            </div>
-
-            <!-- 牌卡 5：黃金赫雪爾星雲 -->
-            <div onclick="selectCard(4)" id="card-wrapper-4" class="card-container floating-delay-4 cursor-pointer w-[280px] h-[410px] transition-all duration-300 hover:scale-105 shrink-0 snap-center">
-                <div class="card-inner w-full h-full relative">
-                    <div class="card-front w-full h-full absolute rounded-2xl border border-amber-500/30 nasa-bg-gold p-5 flex flex-col justify-between shadow-[inset_0_0_20px_rgba(245,158,11,0.15)] shadow-2xl shadow-amber-500/10 hover:border-amber-400/60 transition-all duration-300 relative overflow-hidden">
-                        <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-90" viewBox="0 0 100 150">
-                            <defs>
-                                <radialGradient id="star-glow-f5" cx="50%" cy="50%" r="50%">
-                                    <stop offset="0%" stop-color="#fff" stop-opacity="1"/>
-                                    <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
-                                </radialGradient>
-                            </defs>
-                            <circle cx="12" cy="22" r="0.4" fill="#fff" opacity="0.6"/>
-                            <circle cx="82" cy="78" r="0.6" fill="#fef08a" opacity="0.9" class="animate-pulse"/>
-                            <circle cx="35" cy="35" r="2.5" fill="url(#star-glow-f5)"/>
-                            <circle cx="35" cy="35" r="0.6" fill="#fff"/>
-                        </svg>
-                        <div class="flex justify-between items-center text-[10px] text-amber-400/80 font-mono tracking-wider relative z-10">
-                            <span>COSMOS</span>
-                            <span>Ⅴ</span>
-                        </div>
-                        <div class="flex-grow flex flex-col justify-center items-center gap-4 relative z-10">
-                            <div class="w-20 h-20 text-amber-400/90 nebula-glow-amber">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9Z" /><circle cx="12" cy="12" r="2" /></svg>
-                            </div>
-                            <span class="text-sm tracking-widest text-amber-300 font-bold">黃金赫雪爾</span>
-                        </div>
-                        <div class="text-center text-[9px] text-slate-500 font-mono relative z-10 tracking-widest">DEEP SPACE</div>
-                    </div>
-                    <!-- 牌面 (結果預留區) -->
-                    <div id="card-result-4" class="card-back w-full h-full absolute rounded-2xl p-[2px]"></div>
-                </div>
-            </div>
-
         </div>
     </main>
 
-    <!-- 【觀音求籤式全螢幕神祕遮罩 (Lightbox)】 - 確保其 z-index 為 9999，完全鎖定並遮擋大廳所有物件，杜絕重疊跑位與殘留 -->
-    <div id="fortune-modal" class="fixed inset-0 z-[9999] flex flex-col items-center justify-start p-4 bg-slate-950/95 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-500 overflow-y-auto">
-        
-        <!-- 卡牌定位區 (鎖定 w-[280px] h-[410px]，尺寸前後完美一致，絕不縮小) -->
-        <div id="modal-card-placeholder" class="card-container w-[280px] h-[410px] relative shrink-0 transition-transform duration-500 mt-6 sm:mt-12">
-            <!-- 翻牌核心 DOM 會在點擊時由 JavaScript 動態移動至此 -->
-        </div>
-
-        <!-- 底部一體化操作面板：在卡牌正下方垂直排列（距離 24px），在同一排版文檔流內，絕對不會重疊 -->
-        <div id="modal-action-panel" class="hidden opacity-0 transform translate-y-4 transition-all duration-500 flex flex-col items-center justify-center gap-3.5 w-full max-w-xs mt-6 shrink-0 pb-12">
-            <!-- 功能按鈕 1：分享占卜結果 -->
-            <button onclick="shareFortune()" class="w-full py-3.5 bg-gradient-to-r from-teal-500 via-cyan-500 to-indigo-500 rounded-full font-bold text-sm tracking-widest shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:scale-102 active:scale-98 text-white transition-all duration-150">
-                分享占卜結果 🔗
-            </button>
-            
-            <!-- 功能按鈕 2：重啟星際占卜 -->
-            <button onclick="resetGameFromModal()" class="w-full py-3 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded-full font-bold text-sm tracking-widest shadow-lg hover:scale-102 active:scale-98 text-slate-200 transition-all duration-150">
-                重啟星際占卜 🌀
-            </button>
-        </div>
+    <!-- 吐司通知 (複製成功等提示) -->
+    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-950/95 backdrop-blur-md border border-amber-500/30 text-amber-100 px-6 py-3.5 rounded-full text-xs md:text-sm font-medium tracking-widest shadow-[0_10px_30px_rgba(0,0,0,0.8)] transition-all duration-500 opacity-0 pointer-events-none z-50 flex items-center gap-2.5">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i> <span id="toastMsg">連結複製成功！</span>
     </div>
 
-    <!-- 運勢資料庫與遊戲邏輯 -->
+    <!-- 底部資訊欄 -->
+    <footer class="text-center z-10 text-[10px] text-gray-600 mt-8 tracking-widest font-light font-celestial">
+        <p>© 2026 COSMIC DIAL. LISTEN TO THE SILENT STARS & ALIGN YOUR GRAVITY.</p>
+    </footer>
+
     <script>
-        // 運勢吉凶庫
-        const FORTUNES = [
-            {
-                luck: '超極致大吉',
-                score: '★★★★★',
-                luckColor: 'text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.85)]',
-                description: '星軌連成一線，宇宙的能量正全速湧向你！今天你就是萬中無一的引力核心。',
-                notice: '順從直覺做出那些你一直猶豫不決的決定。今天不適合低調，勇敢展現你的光芒！'
-            },
-            {
-                luck: '耀眼大吉',
-                score: '★★★★☆',
-                luckColor: 'text-pink-300 drop-shadow-[0_0_12px_rgba(244,114,182,0.85)]',
-                description: '恆星爆發出璀璨光芒。今天人緣、財運極佳，任何事只要踏出第一步便能順風順水。',
-                notice: '記得向身邊的人傳遞溫暖，今天分享好運會讓你的正向磁場無限倍增。'
-            },
-            {
-                luck: '恆星中吉',
-                score: '★★★★☆',
-                luckColor: 'text-indigo-300 drop-shadow-[0_0_12px_rgba(129,140,248,0.85)]',
-                description: '潮汐與引力取得完美的和諧。今天心情平穩愉快，能妥善處理工作與生活上的各種繁雜瑣事。',
-                notice: '適合整理雜亂的桌面或進行深度思考，重整日常的軌道會帶來新的好運氣。'
-            },
-            {
-                luck: '晨曦小吉',
-                score: '★★★☆☆',
-                luckColor: 'text-cyan-300 drop-shadow-[0_0_12px_rgba(34,211,238,0.85)]',
-                description: '幸運的小行星與你擦身而過，帶來意想不到的驚喜，或許是一杯好咖啡或一句溫暖的問候。',
-                notice: '保持敏銳的觀察力，別因為低頭滑手機而錯過了身邊微小但美好的星光。'
-            },
-            {
-                luck: '星雲末吉',
-                score: '★★★☆☆',
-                luckColor: 'text-emerald-300 drop-shadow-[0_0_12px_rgba(52,211,153,0.85)]',
-                description: '塵埃與星際氣體正在緩慢凝聚，這代表你的好運還在醞釀中，只要耐心等待，終會綻放。',
-                notice: '今天做事請按部就班，不宜急躁。多給自己一點放鬆的時間，喝杯熱茶是不錯的選擇。'
-            },
-            {
-                luck: '引力平吉',
-                score: '★★☆☆☆',
-                luckColor: 'text-slate-200 drop-shadow-[0_0_12px_rgba(203,213,225,0.85)]',
-                description: '宇宙處於一種相對靜止與沉思的狀態。今天沒有太大的起伏，是個進行自我對話的好時機。',
-                notice: '適合讀完一本書、或是聽聽白噪音，減少與外界無效的社交能幫助你儲備靈魂能量。'
-            },
-            {
-                luck: '黑洞小凶',
-                score: '★★☆☆☆',
-                luckColor: 'text-fuchsia-300 drop-shadow-[0_0_12px_rgba(232,121,249,0.85)]',
-                description: '黑洞產生了些許的能量波動，容易吸附一些負面情緒。今天可能會感到有些疲倦、提不起勁。',
-                notice: '注意控制情緒，發言前先停頓三秒。遠離那些總是抱怨、消耗你心神的人 or 群組。'
-            },
-            {
-                luck: '暗物質大凶',
-                score: '★☆☆☆☆',
-                luckColor: 'text-rose-400 drop-shadow-[0_0_12px_rgba(244,63,94,0.85)]',
-                description: '星系間充滿未知的迷霧。今天可能會遇到小小的挫折、或是東西損壞等突發狀況，請保持冷靜。',
-                notice: '出門前檢查鑰匙與隨身物品。行車、走路多注意安全，別人的挑釁請笑而不答。過今天就好！'
-            }
-        ];
-
-        // 宣告全域變數
-        let hasSelected = false;
-        let currentSelection = { cardIndex: null, fortune: null, theme: null };
-        let currentAssignedFortunes = [];
-
-        // 5張卡片的宇宙符號與主題樣式
+        // --- 1. 遊戲資料池定義 ---
         const CARD_THEMES = [
             {
-                name: '創生之柱',
-                colorClass: 'from-cyan-500/50 via-teal-500/30 to-yellow-600/20',
-                textClass: 'text-cyan-300',
-                borderClass: 'border-cyan-500/30',
-                glowClass: 'shadow-[inset_0_0_20px_rgba(6,182,212,0.25)] shadow-cyan-500/30',
-                bgStyle: `background: radial-gradient(circle at 15% 15%, rgba(6, 182, 212, 0.35) 0%, transparent 55%), radial-gradient(circle at 85% 25%, rgba(234, 179, 8, 0.3) 0%, transparent 60%), radial-gradient(circle at 45% 75%, rgba(79, 70, 229, 0.3) 0%, transparent 70%), radial-gradient(circle at 50% 50%, #030712 0%, #010204 100%);`,
-                starFieldSvg: `
-                    <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-90" viewBox="0 0 100 150">
-                        <defs>
-                            <radialGradient id="star-glow-f1" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" stop-color="#fff" stop-opacity="1"/>
-                                <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
-                            </radialGradient>
-                        </defs>
-                        <circle cx="10" cy="15" r="0.4" fill="#fff" opacity="0.3"/>
-                        <circle cx="92" cy="28" r="0.3" fill="#fff" opacity="0.5"/>
-                        <circle cx="38" cy="85" r="0.5" fill="#e0f7fa" opacity="0.6"/>
-                        <circle cx="78" cy="120" r="0.4" fill="#fff" opacity="0.4"/>
-                        <circle cx="18" cy="130" r="0.5" fill="#fff" opacity="0.5"/>
-                        <circle cx="85" cy="14" r="0.3" fill="#fff" opacity="0.3"/>
-                        <circle cx="58" cy="62" r="0.4" fill="#fff" opacity="0.4"/>
-                        <circle cx="75" cy="40" r="2.5" fill="url(#star-glow-f1)"/>
-                        <circle cx="75" cy="40" r="0.8" fill="#fff"/>
-                        <path d="M 20,150 C 35,110 32,80 25,60 C 23,55 17,50 22,40 C 26,30 35,45 42,55 C 50,70 48,110 45,150 Z" fill="#0c192c" opacity="0.65" />
-                    </svg>`,
-                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M12 3a9 9 0 0 0-9 9M12 21a9 9 0 0 0 9-9" /><path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M12 12c2-3 5-4 7-2s1 5-2 7" /><path d="M12 12c-2 3-5 4-7 2s-1-5 2-7" /></svg>`
+                id: 'purple',
+                colorClass: 'from-purple-950 via-slate-950 to-violet-950',
+                borderGlow: 'border-purple-500/40 hover:border-purple-400',
+                themeName: '星雲紫',
+                elementName: '【星雲幻境 - 精神與直覺】',
+                labelColor: 'bg-purple-600/80 border border-purple-400/30',
+                svgColor: '#c084fc',
+                accentColor: 'shadow-[0_0_20px_rgba(168,85,247,0.4)]'
             },
             {
-                name: '仙女座紫星雲',
-                colorClass: 'from-purple-500/50 via-pink-500/30 to-violet-950/20',
-                textClass: 'text-purple-300',
-                borderClass: 'border-purple-500/30',
-                glowClass: 'shadow-[inset_0_0_20px_rgba(168,85,247,0.25)] shadow-purple-500/30',
-                bgStyle: `background: radial-gradient(circle at 35% 45%, rgba(168, 85, 247, 0.45) 0%, transparent 50%), radial-gradient(circle at 75% 65%, rgba(219, 39, 119, 0.35) 0%, transparent 60%), radial-gradient(circle at 50% 15%, rgba(124, 58, 237, 0.25) 0%, transparent 65%), radial-gradient(circle at 50% 50%, #030712 0%, #010204 100%);`,
-                starFieldSvg: `
-                    <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-90" viewBox="0 0 100 150">
-                        <defs>
-                            <radialGradient id="star-glow-f2" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" stop-color="#fff" stop-opacity="1"/>
-                                <stop offset="100%" stop-color="#e879f9" stop-opacity="0"/>
-                            </radialGradient>
-                        </defs>
-                        <circle cx="15" cy="35" r="0.4" fill="#fff" opacity="0.6"/>
-                        <circle cx="82" cy="18" r="0.3" fill="#fff" opacity="0.4"/>
-                        <circle cx="28" cy="98" r="0.4" fill="#fff" opacity="0.5"/>
-                        <circle cx="88" cy="112" r="0.3" fill="#fff" opacity="0.7" class="animate-pulse"/>
-                        <circle cx="12" cy="78" r="0.5" fill="#fff" opacity="0.4"/>
-                        <circle cx="45" cy="55" r="3.5" fill="url(#star-glow-f2)"/>
-                        <circle cx="45" cy="55" r="0.7" fill="#fff"/>
-                        <circle cx="50" cy="51" r="2.0" fill="url(#star-glow-f2)" opacity="0.7"/>
-                        <circle cx="50" cy="51" r="0.5" fill="#fff"/>
-                    </svg>`,
-                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-30 12 12)" /><ellipse cx="12" cy="12" rx="6" ry="2.5" transform="rotate(30 12 12)" /><circle cx="12" cy="12" r="2" /></svg>`
+                id: 'blue',
+                colorClass: 'from-blue-950 via-slate-950 to-cyan-950',
+                borderGlow: 'border-cyan-500/40 hover:border-cyan-400',
+                themeName: '極光藍',
+                elementName: '【極光之海 - 智慧與理性】',
+                labelColor: 'bg-cyan-600/80 border border-cyan-400/30',
+                svgColor: '#22d3ee',
+                accentColor: 'shadow-[0_0_20px_rgba(6,182,212,0.4)]'
             },
             {
-                name: '獵戶座恆星爆發',
-                colorClass: 'from-red-500/50 via-orange-500/30 to-pink-900/20',
-                textClass: 'text-pink-300',
-                borderClass: 'border-pink-500/30',
-                glowClass: 'shadow-[inset_0_0_20px_rgba(244,63,94,0.25)] shadow-pink-500/30',
-                bgStyle: `background: radial-gradient(circle at 50% 50%, rgba(244, 63, 94, 0.45) 0%, transparent 45%), radial-gradient(circle at 20% 70%, rgba(6, 182, 212, 0.35) 0%, transparent 60%), radial-gradient(circle at 80% 30%, rgba(249, 115, 22, 0.35) 0%, transparent 60%), radial-gradient(circle at 50% 50%, #030712 0%, #010204 100%);`,
-                starFieldSvg: `
-                    <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-90" viewBox="0 0 100 150">
-                        <defs>
-                            <radialGradient id="star-glow-f3" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" stop-color="#fff" stop-opacity="1"/>
-                                <stop offset="50%" stop-color="#fda4af" stop-opacity="0.8"/>
-                                <stop offset="100%" stop-color="#f43f5e" stop-opacity="0"/>
-                            </radialGradient>
-                        </defs>
-                        <circle cx="8" cy="45" r="0.4" fill="#fff" opacity="0.6"/>
-                        <circle cx="92" cy="72" r="0.3" fill="#fff" opacity="0.5"/>
-                        <circle cx="32" cy="115" r="0.4" fill="#fff" opacity="0.4"/>
-                        <circle cx="68" cy="135" r="0.5" fill="#fff" opacity="0.7"/>
-                        <circle cx="50" cy="65" r="6.0" fill="url(#star-glow-f3)"/>
-                        <circle cx="50" cy="65" r="0.9" fill="#fff"/>
-                        <line x1="50" y1="50" x2="50" y2="80" stroke="#fff" stroke-width="0.5" opacity="0.8" />
-                        <line x1="35" y1="65" x2="65" y2="65" stroke="#fff" stroke-width="0.5" opacity="0.8" />
-                    </svg>`,
-                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></svg>`
+                id: 'gold',
+                colorClass: 'from-amber-950 via-slate-950 to-yellow-950',
+                borderGlow: 'border-amber-500/40 hover:border-amber-400',
+                themeName: '恆星金',
+                elementName: '【恆星核心 - 意志與行動】',
+                labelColor: 'bg-amber-600/80 border border-amber-400/30',
+                svgColor: '#fbbf24',
+                accentColor: 'shadow-[0_0_20px_rgba(245,158,11,0.4)]'
             },
             {
-                name: '深空黯夜星河',
-                colorClass: 'from-sky-500/50 via-slate-800/40 to-slate-950/30',
-                textClass: 'text-sky-300',
-                borderClass: 'border-sky-500/30',
-                glowClass: 'shadow-[inset_0_0_20px_rgba(56,189,248,0.25)] shadow-sky-500/30',
-                bgStyle: `background: radial-gradient(circle at 50% 30%, rgba(56, 189, 248, 0.35) 0%, transparent 50%), radial-gradient(circle at 40% 70%, rgba(30, 41, 59, 0.8) 0%, transparent 70%), radial-gradient(circle at 50% 50%, #02040a 0%, #010103 100%);`,
-                starFieldSvg: `
-                    <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-90" viewBox="0 0 100 150">
-                        <path d="M -10,20 Q 30,60 70,110 T 110,160 L 120,140 Q 80,90 40,40 T -20,0 Z" fill="#38bdf8" opacity="0.18" filter="blur(4px)" />
-                        <circle cx="12" cy="18" r="0.3" fill="#fff" opacity="0.6"/>
-                        <circle cx="22" cy="32" r="0.4" fill="#fff" opacity="0.8"/>
-                        <circle cx="45" cy="64" r="0.5" fill="#bae6fd" opacity="0.9" class="animate-pulse"/>
-                        <circle cx="58" cy="80" r="0.4" fill="#fff" opacity="0.7"/>
-                    </svg>`,
-                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /><path d="M12 12c0 2.5-1.5 4.5-3.5 4.5S5 14.5 5 12" /><path d="M12 12c0-2.5 1.5-4.5 3.5-4.5s3.5 2 3.5 4.5" /></svg>`
+                id: 'red',
+                colorClass: 'from-rose-950 via-slate-950 to-red-950',
+                borderGlow: 'border-rose-500/40 hover:border-rose-400',
+                themeName: '超新星紅',
+                elementName: '【星爆裂隙 - 激情與重塑】',
+                labelColor: 'bg-rose-600/80 border border-rose-400/30',
+                svgColor: '#fb7185',
+                accentColor: 'shadow-[0_0_20px_rgba(244,63,94,0.4)]'
             },
             {
-                name: '黃金赫雪爾星雲',
-                colorClass: 'from-amber-500/50 via-violet-500/30 to-slate-950/20',
-                textClass: 'text-amber-300',
-                borderClass: 'border-amber-500/30',
-                glowClass: 'shadow-[inset_0_0_20px_rgba(245,158,11,0.25)] shadow-amber-500/30',
-                bgStyle: `background: radial-gradient(circle at 30% 30%, rgba(245, 158, 11, 0.25) 0%, transparent 60%), radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.2) 0%, transparent 65%), radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.8) 0%, #010204 100%);`,
-                starFieldSvg: `
-                    <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-90" viewBox="0 0 100 150">
-                        <defs>
-                            <radialGradient id="star-glow-f5" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" stop-color="#fff" stop-opacity="1"/>
-                                <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
-                            </radialGradient>
-                        </defs>
-                        <circle cx="12" cy="22" r="0.4" fill="#fff" opacity="0.6"/>
-                        <circle cx="82" cy="78" r="0.6" fill="#fef08a" opacity="0.9" class="animate-pulse"/>
-                        <circle cx="35" cy="35" r="2.5" fill="url(#star-glow-f5)"/>
-                        <circle cx="35" cy="35" r="0.6" fill="#fff"/>
-                    </svg>`,
-                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9Z" /><circle cx="12" cy="12" r="2" /></svg>`
+                id: 'teal',
+                colorClass: 'from-emerald-950 via-slate-950 to-teal-950',
+                borderGlow: 'border-teal-500/40 hover:border-teal-400',
+                themeName: '星塵綠',
+                elementName: '【星塵溫床 - 復甦與療癒】',
+                labelColor: 'bg-teal-600/80 border border-teal-400/30',
+                svgColor: '#2dd4bf',
+                accentColor: 'shadow-[0_0_20px_rgba(45,212,191,0.4)]'
             }
         ];
 
-        // 隨機分配運勢並寫入牌面
-        function prepareFortunes() {
-            const shuffledFortunes = shuffle([...FORTUNES]);
-            currentAssignedFortunes = shuffledFortunes.slice(0, 5);
-            
-            for (let i = 0; i < 5; i++) {
-                const fortune = currentAssignedFortunes[i];
-                const theme = CARD_THEMES[i];
-                const resultDiv = document.getElementById(`card-result-${i}`);
+        const CARD_NAMES = [
+            "仙女座的凝望 (Andromeda)", 
+            "黑洞的奇異點 (Singularity)", 
+            "獵戶座的星盾 (Orion's Shield)", 
+            "雙子星的共振 (Binary Stars)", 
+            "銀河系之風暴 (Galactic Storm)",
+            "昴宿星團的光雨 (Pleiades Shower)",
+            "織女星的引力弦 (Vega's String)",
+            "木星的巨紅斑 (Jupiter's Eye)",
+            "暗物質的編織者 (Dark Matter Web)"
+        ];
 
-                if (resultDiv) {
-                    resultDiv.innerHTML = `
-                        <div class="w-full h-full rounded-2xl bg-gradient-to-r ${theme.colorClass} p-[1px] ${theme.glowClass}">
-                            <div class="w-full h-full rounded-[14px] p-5 flex flex-col justify-between border border-white/10 relative overflow-hidden" style="${theme.bgStyle}">
-                                ${theme.starFieldSvg}
-                                <div class="flex justify-between items-center relative z-10 mb-1">
-                                    <span class="text-[10px] font-bold tracking-widest ${theme.textClass} filter drop-shadow-[0_0_2px_rgba(0,0,0,0.8)]">${theme.name}</span>
-                                    <div class="w-5 h-5 ${theme.textClass} filter drop-shadow-[0_0_5px_currentColor]">
-                                        ${theme.svg}
+        const FORTUNE_LEVELS = [
+            { level: "極光耀頂【超大吉】", color: "text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" },
+            { level: "繁星隨行【大吉】", color: "text-yellow-200 drop-shadow-[0_0_6px_rgba(253,224,71,0.4)]" },
+            { level: "微光照拂【吉】", color: "text-purple-300" },
+            { level: "星塵飛揚【小吉】", color: "text-cyan-300" },
+            { level: "星軌平順【平】", color: "text-gray-300" },
+            { level: "重力湧動【磨練】", color: "text-rose-400" }
+        ];
+
+        const ASTRO_READINGS = [
+            {
+                desc: "今日你的能量場與高維度星際網絡完美契合。直覺力敏銳得如同雷達，身邊似乎有隱形的引力將好運推向你。那些困擾已久的懸案，在今天極易迎來靈光乍現的突破，甚至是命運軌道的重新校準。",
+                guide: "「勇敢地伸出觸角去感知世界，今日宇宙正全神貫注地聆聽你的祈願。」"
+            },
+            {
+                desc: "目前的你正處於一個星體重組的過渡期。某些舊有的、不再適合你靈魂成長的連結正在慢慢消融。這不是失去，而是宇宙在為即將到來的全新能量風暴騰出空間，保持身心放鬆即可。",
+                guide: "「別害怕黑暗，那是星辰誕生前的唯一序曲。」"
+            },
+            {
+                desc: "今日你將獲得如恆星般穩定的支援能量。適合開啟有計畫性的工作，你的專注力與執行力正處於軌道波峰。周圍的人將被你溫暖而堅定的氣場吸引，這也是建立深度信任與合作的絕佳時機。",
+                guide: "「向外播撒你的光，但記得保持核心燃燒的純粹。」"
+            },
+            {
+                desc: "波瀾起伏的宇宙引力正在衝擊你的星盤。今天可能會有一些突發事件或意料之外的變動挑戰你的適應力。這是一個信號，說明你現有的常規需要打破，一場絢爛的『超新星爆發』正等待你在混亂中重生。",
+                guide: "「當風暴改變了地平線，便是展翅飛向新星域的時刻。」"
+            },
+            {
+                desc: "今日星光溫和，能量溫潤地包裹著你。這是一個絕佳的『自我修復』日，不宜過度奔忙。將注意力收回到自己身上，聆聽內心的潮汐波動，泡一盞茶、讀一本書，或者僅僅是靜坐呼吸，都是在與宇宙同頻。",
+                guide: "「在無邊的寂靜中，你會聽見群星對你細語的愛意。」"
+            },
+            {
+                desc: "雙子星軌道的交匯，暗示今日人際交往將成為你的能量放大器。一場與朋友的深度對話，或者偶遇的一位陌生人，都可能為你帶來至關重要的命運啟示。試著保持開放與好奇，宇宙正透過他人對你說話。",
+                guide: "「每個與你擦肩而過的靈魂，都是天際劃過的一顆流星，皆有深意。」"
+            }
+        ];
+
+        // 儲存當前產生的 5 張卡片的內定運勢，杜絕「載入中」
+        let generatedCardsData = [];
+        let selectedIndexGlobal = null;
+        let isDivining = false;
+
+        window.onload = function() {
+            generateCards();
+        };
+
+        // --- 2. 核心：生成牌卡且「預先設定好命運數據」 ---
+        function generateCards() {
+            const container = document.getElementById('cardsStage');
+            container.innerHTML = '';
+            generatedCardsData = []; // 清空數據
+            
+            // 隨機打亂卡片主題陣列
+            const shuffledThemes = [...CARD_THEMES].sort(() => Math.random() - 0.5);
+            
+            shuffledThemes.forEach((theme, index) => {
+                // 為每一張卡預先指定好隨機名稱、吉凶、與解說
+                const randomName = CARD_NAMES[Math.floor(Math.random() * CARD_NAMES.length)];
+                const randomFortune = FORTUNE_LEVELS[Math.floor(Math.random() * FORTUNE_LEVELS.length)];
+                const randomReading = ASTRO_READINGS[Math.floor(Math.random() * ASTRO_READINGS.length)];
+
+                // 寫入本地資料庫
+                generatedCardsData.push({
+                    index: index,
+                    theme: theme,
+                    cardName: randomName,
+                    fortune: randomFortune,
+                    desc: randomReading.desc,
+                    guide: randomReading.guide
+                });
+
+                // 動態生成帶有「3D Cover/Face 正確對立」與「預載內容」的牌卡 HTML
+                const cardHTML = `
+                    <div class="card-container hover-lift float-${index} w-full aspect-[10/16] cursor-pointer" 
+                         id="card-${index}" 
+                         onclick="selectCard(${index})">
+                        <div class="card-inner">
+                            
+                            <!-- 1. 卡片背面 (Cover) - 網頁剛載入時，直接顯示這面 -->
+                            <div class="card-cover bg-gradient-to-br ${theme.colorClass} border border-white/10 ${theme.accentColor} p-4 flex flex-col justify-between items-center shadow-2xl gold-border-glow">
+                                <div class="w-full flex justify-between text-[9px] text-gray-500 tracking-wider">
+                                    <span class="font-celestial">COSMIC</span>
+                                    <span>N°0${index+1}</span>
+                                </div>
+                                
+                                <!-- 背面極致神祕星盤 (Astrolabe 幾何 SVG) -->
+                                <div class="w-24 h-24 md:w-28 md:h-28 my-auto relative flex items-center justify-center">
+                                    <svg class="absolute animate-[spin_80s_linear_infinite] w-full h-full opacity-45" viewBox="0 0 100 100">
+                                        <!-- 外圈刻度與符號 -->
+                                        <circle cx="50" cy="50" r="46" fill="none" stroke="${theme.svgColor}" stroke-width="1.2" stroke-dasharray="2, 2"/>
+                                        <circle cx="50" cy="50" r="41" fill="none" stroke="${theme.svgColor}" stroke-width="0.5"/>
+                                        <!-- 中圈天體軌道 -->
+                                        <circle cx="50" cy="50" r="32" fill="none" stroke="${theme.svgColor}" stroke-width="0.8" stroke-dasharray="6, 3"/>
+                                        <circle cx="38" cy="50" r="20" fill="none" stroke="${theme.svgColor}" stroke-width="0.5" opacity="0.5"/>
+                                        <!-- 八向經緯度光芒 -->
+                                        <line x1="50" y1="4" x2="50" y2="96" stroke="${theme.svgColor}" stroke-width="0.4" opacity="0.6"/>
+                                        <line x1="4" y1="50" x2="96" y2="50" stroke="${theme.svgColor}" stroke-width="0.4" opacity="0.6"/>
+                                        <line x1="18" y1="18" x2="82" y2="82" stroke="${theme.svgColor}" stroke-width="0.3" stroke-dasharray="2,2" opacity="0.4"/>
+                                        <line x1="18" y1="82" x2="82" y2="18" stroke="${theme.svgColor}" stroke-width="0.3" stroke-dasharray="2,2" opacity="0.4"/>
+                                    </svg>
+                                    <!-- 內核星芒 -->
+                                    <svg class="absolute animate-[spin_25s_linear_infinite_reverse] w-12 h-12" viewBox="0 0 100 100">
+                                        <polygon points="50,0 60,35 95,35 68,57 78,95 50,72 22,95 32,57 5,35 40,35" fill="none" stroke="${theme.svgColor}" stroke-width="1.5" />
+                                    </svg>
+                                    <div class="z-10">
+                                        <i class="fa-solid fa-bahai text-lg opacity-95" style="color: ${theme.svgColor}"></i>
                                     </div>
                                 </div>
-                                <div class="text-center flex-grow flex flex-col justify-center items-center relative z-10 overflow-hidden my-1">
-                                    <div class="text-[8px] font-bold text-slate-400 tracking-widest uppercase">今日運勢</div>
-                                    <div class="text-2xl md:text-3xl font-black ${fortune.luckColor} tracking-widest my-0.5 filter drop-shadow-md">
-                                        ${fortune.luck}
-                                    </div>
-                                    <div class="text-xs text-amber-300 tracking-widest mb-1">${fortune.score}</div>
-                                    <div class="text-[14px] text-slate-100 leading-relaxed text-left bg-slate-950/70 p-3.5 rounded-xl border border-white/5 backdrop-blur-sm shadow-inner overflow-y-auto max-h-[125px] w-full custom-scroll font-medium">
-                                        ${fortune.description}
-                                    </div>
+
+                                <div class="text-center w-full">
+                                    <span class="text-[10px] md:text-xs font-semibold tracking-[0.25em] text-amber-200/90 drop-shadow-md">啟動星軌</span>
+                                    <div class="w-8 h-[1px] mx-auto mt-2" style="background: ${theme.svgColor}; opacity:0.6;"></div>
                                 </div>
-                                <div class="border-t border-white/10 pt-2.5 relative z-10 bg-slate-950/30 rounded-b-xl backdrop-blur-[2px] max-h-[85px] overflow-y-auto custom-scroll w-full">
-                                    <div class="text-[11px] font-bold text-yellow-400 tracking-widest mb-0.5 flex items-center gap-1">
-                                        <span>⭐ 宇宙指引</span>
-                                    </div>
-                                    <p class="text-[13px] text-slate-200 leading-relaxed text-left font-medium">
-                                        ${fortune.notice}
+                            </div>
+
+                            <!-- 2. 卡片正面 (Face) - 點擊後翻開呈現 (預設預載好，不顯示載入中) -->
+                            <div class="card-face bg-gradient-to-b ${theme.colorClass} border border-white/20 p-4 flex flex-col justify-between items-center shadow-2xl">
+                                <div class="w-full flex justify-between text-[9px] text-gray-300 opacity-80">
+                                    <span class="font-celestial">${theme.themeName}</span>
+                                    <i class="fa-solid fa-sparkles" style="color: ${theme.svgColor}"></i>
+                                </div>
+
+                                <!-- 正面：星象核心圖案 -->
+                                <div class="w-20 h-20 my-auto relative flex items-center justify-center">
+                                    <svg class="absolute animate-[spin_50s_linear_infinite]" width="75" height="75" viewBox="0 0 100 100">
+                                        <polygon points="50,5 88,27 88,73 50,95 12,73 12,27" fill="none" stroke="${theme.svgColor}" stroke-width="1.2" stroke-dasharray="3,1" />
+                                        <circle cx="50" cy="50" r="22" fill="none" stroke="${theme.svgColor}" stroke-width="1.2" />
+                                    </svg>
+                                    <!-- 星體斑斕核心點 -->
+                                    <div class="w-4 h-4 rounded-full absolute shadow-[0_0_15px_#fff]" style="background-color: ${theme.svgColor}; opacity: 0.85;"></div>
+                                </div>
+
+                                <div class="text-center w-full overflow-hidden">
+                                    <p class="text-[8px] text-purple-300/60 tracking-widest font-celestial">STAR SPECTRUM</p>
+                                    <p class="text-[11px] font-bold tracking-wide mt-1 text-white truncate px-1">
+                                        ${randomName.split(' ')[0]}
                                     </p>
                                 </div>
                             </div>
+
                         </div>
-                    `;
-                }
-            }
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            });
         }
 
-        // 選擇牌面
+        // --- 3. 翻牌占卜流 ---
         function selectCard(selectedIndex) {
-            if (hasSelected) return;
-            hasSelected = true;
+            if (isDivining) return;
+            isDivining = true;
+            selectedIndexGlobal = selectedIndex;
 
-            currentSelection.cardIndex = selectedIndex;
-            currentSelection.theme = CARD_THEMES[selectedIndex];
-            currentSelection.fortune = currentAssignedFortunes[selectedIndex];
+            // 取得該牌面預載好的運勢數據
+            const data = generatedCardsData[selectedIndex];
 
-            const wrapper = document.getElementById(`card-wrapper-${selectedIndex}`);
-            const modal = document.getElementById('fortune-modal');
-            const placeholder = document.getElementById('modal-card-placeholder');
+            // 1. 觸發翻牌 (加入 flipped 樣式，翻轉 180 度)
+            const selectedCardContainer = document.getElementById(`card-${selectedIndex}`);
+            selectedCardContainer.classList.add('flipped');
 
-            if (wrapper && placeholder && modal) {
-                // 停止原卡片懸浮浮動
-                wrapper.classList.remove('floating', 'floating-delay-1', 'floating-delay-2', 'floating-delay-3', 'floating-delay-4');
-
-                // 將選中的卡片節點物理移入 Modal 遮罩容器內
-                placeholder.appendChild(wrapper);
-
-                // 顯示全螢幕神秘黑洞背景遮罩
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-
-                // 執行翻牌與淡入按鈕動畫
-                setTimeout(() => {
-                    const selectInner = wrapper.querySelector('.card-inner');
-                    if (selectInner) {
-                        selectInner.classList.add('card-flipped');
+            // 2. 其他牌卡慢慢淡出並往中心收縮 (防版面震動與跳動)
+            setTimeout(() => {
+                const containers = document.querySelectorAll('.card-container');
+                containers.forEach((container, idx) => {
+                    if (idx !== selectedIndex) {
+                        container.style.transform = 'scale(0.1) rotate(15deg)';
+                        container.style.opacity = '0';
+                        container.style.pointerEvents = 'none';
+                        container.style.transition = 'all 750ms cubic-bezier(0.6, -0.2, 0.7, 0.1)';
                     }
+                });
+            }, 250);
 
-                    const actionPanel = document.getElementById('modal-action-panel');
-                    if (actionPanel) {
-                        actionPanel.classList.remove('hidden');
-                        setTimeout(() => {
-                            actionPanel.classList.add('opacity-100', 'translate-y-0');
-                        }, 50);
-                    }
-                }, 300);
-            }
-        }
+            // 3. 展開結果主面板
+            setTimeout(() => {
+                // 收合原舞台
+                const cardsStage = document.getElementById('cardsStage');
+                cardsStage.classList.add('hidden');
 
-        // 分享占卜運勢功能 (複製至剪貼簿)
-        function shareFortune() {
-            const textToCopy = `✨ 我的今日宇宙運勢占卜結果 ✨\n🔮 占卜卡牌：${currentSelection.theme.name}\n🌟 今日運勢：${currentSelection.fortune.luck} (${currentSelection.fortune.score})\n🌌 星軌指引：${currentSelection.fortune.description}\n⭐ 宇宙指引：${currentSelection.fortune.notice}\n快來測測你的今日宇宙運勢吧！`;
-            
-            const textArea = document.createElement("textarea");
-            textArea.value = textToCopy;
-            textArea.style.position = "fixed"; 
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                showCustomToast("運勢結果已複製到剪貼簿！快分享給朋友吧 🔗");
-            } catch (err) {
-                showCustomToast("複製失敗，請手動複製。");
-            }
-            document.body.removeChild(textArea);
-        }
-
-        // 自訂簡易 Toast 提示訊息
-        function showCustomToast(message) {
-            const toast = document.createElement('div');
-            toast.className = "fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 bg-slate-900 border border-cyan-500/50 text-cyan-400 font-bold px-6 py-3 rounded-full shadow-lg text-sm transition-opacity duration-300 pointer-events-none opacity-0";
-            toast.innerText = message;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => { toast.classList.remove('opacity-0'); toast.classList.add('opacity-100'); }, 50);
-            setTimeout(() => { 
-                toast.classList.remove('opacity-100'); 
-                toast.classList.add('opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 2500);
-        }
-
-        // 重置並重新占卜
-        function resetGameFromModal() {
-            hasSelected = false;
-
-            const modal = document.getElementById('fortune-modal');
-            const placeholder = document.getElementById('modal-card-placeholder');
-            const grid = document.getElementById('cards-grid');
-            const targetIndex = currentSelection.cardIndex;
-            const targetCard = document.getElementById(`card-wrapper-${targetIndex}`);
-
-            if (modal && placeholder && grid && targetCard) {
-                // 1. 關閉全螢幕遮罩
-                modal.classList.add('opacity-0', 'pointer-events-none');
+                // 複製已經完全翻轉的牌卡至結果插槽
+                const clone = selectedCardContainer.cloneNode(true);
+                clone.id = "clonedSelectedCard";
+                // 移除外層動畫與懸停抖動，使其安穩展示
+                clone.className = "w-full h-full relative cursor-default";
                 
-                // 2. 將翻牌狀態還原為正面的牌背
-                const inner = targetCard.querySelector('.card-inner');
+                // 鎖定 3D 翻轉角度，確保百分之百顯示正面
+                const inner = clone.querySelector('.card-inner');
                 if (inner) {
-                    inner.classList.remove('card-flipped');
+                    inner.style.transform = 'rotateY(180deg)';
                 }
 
-                // 3. 延遲 500 毫秒將卡片插回大廳網格，並啟動全新的一局
+                const placeholder = document.getElementById('selectedCardPlaceholder');
+                placeholder.innerHTML = '';
+                placeholder.appendChild(clone);
+
+                // 更新詳細命理解析文字
+                const resultCardType = document.getElementById('resultCardType');
+                resultCardType.textContent = data.theme.elementName;
+                resultCardType.className = `text-[11px] font-semibold tracking-wider px-3 py-1 rounded-full text-white ${data.theme.labelColor}`;
+
+                document.getElementById('resultCardName').textContent = data.cardName;
+                
+                const fortuneEl = document.getElementById('resultFortune');
+                fortuneEl.textContent = data.fortune.level;
+                fortuneEl.className = `text-2xl md:text-3xl font-extrabold tracking-widest ${data.fortune.color}`;
+
+                document.getElementById('resultDescription').textContent = data.desc;
+                document.getElementById('resultGuidance').textContent = data.guide;
+
+                // 呈現結果看板
+                const resultStage = document.getElementById('resultStage');
+                resultStage.classList.remove('hidden');
+                
+                // 更動副標題
+                document.getElementById('gameSubtitle').innerHTML = "星軌已定，這便是今日宇宙為你編織的專屬星系啟示。";
+
                 setTimeout(() => {
-                    // 將卡片插回原本在 grid 中的正確 DOM 索引順序位置
-                    const siblings = Array.from(grid.children);
-                    if (targetIndex >= siblings.length) {
-                        grid.appendChild(targetCard);
-                    } else {
-                        grid.insertBefore(targetCard, siblings[targetIndex]);
-                    }
+                    resultStage.classList.add('opacity-100');
+                }, 50);
 
-                    // 重新分派新的隨機吉凶運勢
-                    prepareFortunes();
-
-                    // 重新還原大廳的所有卡片為可顯示與浮動狀態
-                    for (let i = 0; i < 5; i++) {
-                        const wrapper = document.getElementById(`card-wrapper-${i}`);
-                        if (wrapper) {
-                            wrapper.classList.remove('hidden');
-                            wrapper.style.opacity = '1';
-                            wrapper.style.transform = 'scale(1)';
-                            wrapper.style.pointerEvents = 'auto';
-                            
-                            // 重建背景懸浮浮動
-                            if (i === 0) wrapper.classList.add('floating');
-                            if (i === 1) wrapper.classList.add('floating-delay-1');
-                            if (i === 2) wrapper.classList.add('floating-delay-2');
-                            if (i === 3) wrapper.classList.add('floating-delay-3');
-                            if (i === 4) wrapper.classList.add('floating-delay-4');
-                        }
-                    }
-
-                    // 還原副標題
-                    const subTitle = document.getElementById('sub-title');
-                    if (subTitle) {
-                        subTitle.innerHTML = `閉上雙眼，深呼吸三次... 傾聽星塵的耳語，<br>從五張神祕的宇宙圖卡中，選取一張屬於你的今日啟示。`;
-                    }
-
-                    // 隱藏操作面板按鈕
-                    const actionPanel = document.getElementById('modal-action-panel');
-                    if (actionPanel) {
-                        actionPanel.classList.add('opacity-0', 'translate-y-2');
-                    }
-                }, 500);
-            }
+            }, 1100);
         }
 
-        // 洗牌演算法
-        function shuffle(array) {
-            let currentIndex = array.length, randomIndex;
-            while (currentIndex != 0) {
-                randomIndex = Math.floor(Math.random() * currentIndex);
-                currentIndex--;
-                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-            }
-            return array;
+        // --- 4. 按鈕功能 ---
+
+        // 重啟占卜
+        function restartDivination() {
+            const resultStage = document.getElementById('resultStage');
+            resultStage.classList.remove('opacity-100');
+            resultStage.classList.add('opacity-0');
+
+            setTimeout(() => {
+                resultStage.classList.add('hidden');
+                
+                const cardsStage = document.getElementById('cardsStage');
+                cardsStage.classList.remove('hidden');
+                
+                document.getElementById('gameSubtitle').innerHTML = `澄淨思緒，凝望繁星。<br>憑直覺點選一張與你當下靈魂共鳴的星譜牌卡...`;
+
+                // 重新渲染整批星牌
+                generateCards();
+                isDivining = false;
+            }, 600);
         }
 
-        // 初始化
-        window.onload = function() {
-            prepareFortunes();
-        };
+        // 分享運勢 (安全複製機制)
+        function shareFortune() {
+            if (selectedIndexGlobal === null) return;
+            const data = generatedCardsData[selectedIndexGlobal];
+
+            const shareText = `✨【今日宇宙運勢占卜】✨
+--------------------------------
+🔮 啟動星盤：${data.cardName}
+🎨 星軌屬性：${data.theme.themeName} ${data.theme.elementName}
+🌟 今日運勢：${data.fortune.level}
+
+🌌 [星際能量分析]
+${data.desc}
+
+🧭 [宇宙指引方針]
+${data.guide}
+
+--------------------------------
+🌌 聆聽星斗細語，順應宇宙引力 🌌`;
+
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = shareText;
+            tempTextArea.style.position = "fixed"; 
+            document.body.appendChild(tempTextArea);
+            tempTextArea.focus();
+            tempTextArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast("✨ 占卜啟示已複製至剪貼簿，去分享給朋友吧！");
+                } else {
+                    showToast("❌ 複製失敗，請手動圈選文字複製。");
+                }
+            } catch (err) {
+                showToast("❌ 複製失敗，瀏覽器尚未支援。");
+            }
+
+            document.body.removeChild(tempTextArea);
+        }
+
+        // 自訂 Toast 提示
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.textContent = msg;
+            
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3200);
+        }
     </script>
 </body>
 </html>
